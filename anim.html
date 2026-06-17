@@ -40,7 +40,6 @@
             align-items: center;
         }
 
-        /* Идеально плавная анимация заголовка */
         #task-header {
             position: absolute;
             top: 40%;
@@ -65,20 +64,19 @@
         }
 
         .steps-container {
-            margin-top: 160px;
+            margin-top: 120px; /* Подняли блок с решением выше */
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 0px; /* Убрали лишнее расстояние между строками */
             width: 100%;
             padding: 0 20px;
             box-sizing: border-box;
         }
 
-        /* Медленное и плавное выплывание решений */
         .step {
             opacity: 0;
-            transform: translateY(60px); /* Стартует глубже снизу */
-            transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); /* Долгая, тягучая анимация */
+            transform: translateY(30px); /* Уменьшили размах выплывания, чтобы было аккуратнее */
+            transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); 
             font-size: 38px;
         }
 
@@ -132,7 +130,6 @@
     window.addEventListener('click', () => {
         if (currentStep === 0) {
             taskHeader.classList.add('minimized');
-            // Задержка: ждем 0.6 сек, пока заголовок плавно уезжает, затем выпускаем решение
             setTimeout(() => {
                 showNextStep();
             }, 600);
