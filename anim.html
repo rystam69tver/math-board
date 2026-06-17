@@ -2,120 +2,92 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Math Animation Pro</title>
+    <title>Math Animation Ultra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Lora:italic,wght@1,500&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #1a1a1f;
-            /* Наша фирменная сетка */
-            background-image: radial-gradient(#262631 1.5px, transparent 1.5px);
-            background-size: 30px 30px;
-            font-family: 'Times New Roman', Times, serif;
-            font-style: italic;
+            background-color: #16161a;
+            background-image: radial-gradient(#24242e 1.5px, transparent 1.5px);
+            background-size: 35px 35px;
             color: #ffffff;
             overflow: hidden;
             cursor: pointer;
             user-select: none;
         }
 
-        /* Контейнер для центрирования всей математики */
         .math-container {
             display: flex;
             flex-direction: column;
-            gap: 25px;
-            font-size: 45px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            gap: 35px;
+            /* Шрифт Lora для букв, Montserrat для цифр через CSS-настройку */
+            font-family: 'Lora', serif;
+            font-size: 52px;
+            letter-spacing: 1px;
         }
 
-        /* Базовый стиль для каждой строки */
         .step {
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); /* Элегантная плавная скорость */
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             align-items: center;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Когда шаг становится активным */
         .step.active {
             opacity: 1;
-            transform: translateY(0);
+            transform: scale(1) translateY(0);
         }
 
-        /* Стиль для акцентов (лайфхак) */
+        /* Цифры будут более современными */
+        .num { font-family: 'Montserrat', sans-serif; font-style: normal; }
+
         .highlight {
-            color: #ffea00; /* Наш фирменный желтый */
-            text-shadow: 0 0 20px rgba(255, 234, 0, 0.4);
-            font-weight: bold;
+            color: #fbbf24;
+            text-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
         }
 
-        /* Стиль для финального ответа */
         .final-answer {
-            color: #00ffcc; /* Наш фирменный мятный */
-            text-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
-            font-size: 55px;
+            color: #22d3ee;
+            font-size: 68px;
             font-weight: bold;
+            text-shadow: 0 0 35px rgba(34, 211, 238, 0.6);
         }
 
-        sup { font-size: 25px; }
-
-        /* Индикатор кликов на старте */
-        .hint {
-            position: absolute;
-            bottom: 30px;
-            font-family: sans-serif;
-            font-style: normal;
-            font-size: 14px;
-            color: #444455;
-            transition: opacity 0.5s;
-        }
+        .root-symbol { font-family: sans-serif; font-style: normal; font-size: 65px; margin-right: -5px; }
+        .overline { text-decoration: overline; text-underline-offset: 5px; }
+        sup { font-family: 'Montserrat', sans-serif; font-size: 28px; font-style: normal; }
     </style>
 </head>
 <body>
 
 <div class="math-container">
-    <div class="step" id="step0">Вычислить: &nbsp; <b><span style="color: #ffffff;">√</span><span style="text-decoration: overline;">65<sup>2</sup> - 56<sup>2</sup></span></b></div>
+    <div class="step" id="step0">Вычислить: &nbsp; <span class="root-symbol">√</span><span class="overline"><span class="num">65</span><sup>2</sup> - <span class="num">56</span><sup>2</sup></span></div>
     
-    <div class="step" id="step1">= &nbsp; √<span style="text-decoration: overline;"><span class="highlight">(65 - 56)</span><span class="highlight">(65 + 56)</span></span></div>
+    <div class="step" id="step1">= &nbsp; <span class="root-symbol">√</span><span class="overline"><span class="highlight">(<span class="num">65</span> - <span class="num">56</span>)</span><span class="highlight">(<span class="num">65</span> + <span class="num">56</span>)</span></span></div>
     
-    <div class="step" id="step2">= &nbsp; √<span style="text-decoration: overline;">9 · 121</span></div>
+    <div class="step" id="step2">= &nbsp; <span class="root-symbol">√</span><span class="overline"><span class="num">9 · 121</span></span></div>
     
-    <div class="step" id="step3">= &nbsp; 3 · 11</div>
+    <div class="step" id="step3">= &nbsp; <span class="num">3 · 11</span></div>
     
-    <div class="step" id="step4">= &nbsp; <span class="final-answer">33</span></div>
+    <div class="step" id="step4">= &nbsp; <span class="num final-answer">33</span></div>
 </div>
-
-<div class="hint" id="hint">Кликни мышкой или нажми Пробел, чтобы показать следующий шаг</div>
 
 <script>
     let currentStep = 0;
     const totalSteps = 5;
-    const hint = document.getElementById('hint');
-
-    function nextStep() {
+    window.addEventListener('click', () => {
         if (currentStep < totalSteps) {
-            // Гасим подсказку при первом клике
-            if (currentStep === 0) hint.style.opacity = '0';
-            
-            // Активируем текущую строку
             document.getElementById('step' + currentStep).classList.add('active');
             currentStep++;
         }
-    }
-
-    // Запуск по клику на экран или по кнопкам клавиатуры
-    window.addEventListener('click', nextStep);
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight') {
-            nextStep();
-        }
     });
+    window.addEventListener('keydown', (e) => { if (e.code === 'Space') window.dispatchEvent(new Event('click')); });
 </script>
-
 </body>
 </html>
