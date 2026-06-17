@@ -2,17 +2,17 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>MathBoard Pro - V1</title>
+    <title>MathBoard Pro - V2</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            /* Эстетичный темный фон с точечной сеткой */
+            /* Слегка приглушенная сетка, чтобы не отвлекать от текста */
             background-color: #1a1a1f;
-            background-image: radial-gradient(#3a3a45 1.5px, transparent 1.5px);
+            background-image: radial-gradient(#2d2d38 1.5px, transparent 1.5px);
             background-size: 25px 25px;
             font-family: sans-serif;
-            touch-action: none; /* Блокируем скролл браузера при рисовании стилусом */
+            touch-action: none;
         }
         canvas {
             display: block;
@@ -22,6 +22,27 @@
             position: absolute;
             bottom: 20px;
             right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(30, 30, 36, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #888899;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .color-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            box-shadow: 0 0 5px #ffffff;
+        }
+        .hotkeys-hint {
+            position: absolute;
+            top: 20px;
+            left: 20px;
             color: #555566;
             font-size: 14px;
             pointer-events: none;
@@ -30,25 +51,51 @@
 </head>
 <body>
 
+<div class="hotkeys-hint">
+    Цвета: <b>1</b> (Белый) | <b>2</b> (Желтый) | <b>3</b> (Мятный) | <b>4</b> (Красный)<br><br>
+    Отмена: <b>Ctrl + Z</b>
+</div>
+
+<div class="status-panel">
+    <span>Активный цвет:</span>
+    <div id="activeColor" class="color-indicator"></div>
+</div>
+
 <canvas id="board"></canvas>
-<div class="status-panel">Движок: Кривые Безье | Нажатие: Активно</div>
 
 <script>
     const canvas = document.getElementById('board');
-    const ctx = canvas.getContext('2d', { desynchronized: true }); // Уменьшает задержку ввода
+    const ctx = canvas.getContext('2d', { desynchronized: true });
+    const colorIndicator = document.getElementById('activeColor');
 
     let isDrawing = false;
     let points = [];
     
-    // Настройки пера
+    // Система истории для Ctrl+Z
+    let historyStack = [];
+    
+    // Настройки кисти
     const config = {
-        color: '#00ffcc', // Неоновый мятный
-        baseWidth: 3,     // Базовая толщина
-        glow: 8           // Сила свечения
+        color: '#ffffff', // Белый по умолчанию
+        baseWidth: 1.5,   // Минимальная толщина (для легкого касания)
+        pressureMult: 12, // Множитель силы нажатия (чем больше, тем сильнее разница)
+        glow: 4           // Легкое свечение
     };
 
-    // Адаптация под экраны с высоким разрешением (чтобы не было пикселей)
+    const colors = {
+        '1': '#ffffff', // Белый
+        '2': '#ffea00', // Желтый
+        '3': '#00ffcc', // Мятный
+        '4': '#ff3366'  // Красный
+    };
+
     function resizeCanvas() {
+        // Сохраняем текущий рисунок перед ресайзом
+        let tempImg = null;
+        if (historyStack.length > 0) {
+            tempImg = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+
         const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
@@ -58,31 +105,67 @@
         
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.shadowColor = config.color;
-        ctx.shadowBlur = config.glow;
-        ctx.strokeStyle = config.color;
+        
+        // Восстанавливаем рисунок после ресайза
+        if (tempImg) ctx.putImageData(tempImg, 0, 0);
     }
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+    
+    // Сохраняем пустой экран как первый кадр истории
+    saveState();
 
-    // Захват точек с учетом силы нажатия стилуса
+    function saveState() {
+        // Ограничиваем историю 20 шагами, чтобы не забить оперативку
+        if (historyStack.length > 20) historyStack.shift(); 
+        historyStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    function undo() {
+        if (historyStack.length > 1) {
+            historyStack.pop(); // Удаляем текущее состояние
+            ctx.putImageData(historyStack[historyStack.length - 1], 0, 0); // Отрисовываем предыдущее
+        } else if (historyStack.length === 1) {
+            // Если остался только начальный пустой кадр
+            ctx.putImageData(historyStack[0], 0, 0);
+        }
+    }
+
+    function changeColor(hex) {
+        config.color = hex;
+        colorIndicator.style.backgroundColor = hex;
+        colorIndicator.style.boxShadow = `0 0 5px ${hex}`;
+    }
+
+    // Горячие клавиши
+    window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+            undo();
+        } else if (colors[e.key]) {
+            changeColor(colors[e.key]);
+        }
+    });
+
     function addPoint(x, y, pressure) {
-        // Если устройство не передает силу нажатия (например, мышь), ставим дефолтное значение 0.5
         const p = (pressure === 0 || pressure === undefined) ? 0.5 : pressure;
         points.push({ x, y, pressure: p });
     }
 
     canvas.addEventListener('pointerdown', e => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return; // Только левая кнопка мыши или перо
         isDrawing = true;
         points = [];
+        
+        ctx.shadowColor = config.color;
+        ctx.shadowBlur = config.glow;
+        ctx.strokeStyle = config.color;
+
         addPoint(e.clientX, e.clientY, e.pressure);
     });
 
     canvas.addEventListener('pointermove', e => {
         if (!isDrawing) return;
-        
-        // Coalesced events (для планшетов с высокой частотой опроса пера)
         const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
         for (let event of events) {
             addPoint(event.clientX, event.clientY, event.pressure);
@@ -90,10 +173,15 @@
         drawLastSegment();
     });
 
-    canvas.addEventListener('pointerup', () => isDrawing = false);
-    canvas.addEventListener('pointercancel', () => isDrawing = false);
+    // Сохраняем шаг в историю только когда отрываем перо от экрана
+    canvas.addEventListener('pointerup', () => {
+        if (isDrawing) {
+            isDrawing = false;
+            saveState();
+        }
+    });
+    canvas.addEventListener('pointercancel', () => { isDrawing = false; });
 
-    // Алгоритм отрисовки плавных кривых
     function drawLastSegment() {
         if (points.length < 3) return;
 
@@ -101,12 +189,11 @@
         const p1 = points[points.length - 2];
         const p2 = points[points.length - 1];
 
-        // Вычисляем средние точки для плавного соединения кривых Безье
         const mid1 = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
         const mid2 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 
-        // Динамическая толщина линии на основе силы нажатия
-        ctx.lineWidth = config.baseWidth + (p2.pressure * 4);
+        // Новая формула толщины: база + сильная реакция на нажатие
+        ctx.lineWidth = config.baseWidth + (p2.pressure * config.pressureMult);
 
         ctx.beginPath();
         ctx.moveTo(mid1.x, mid1.y);
