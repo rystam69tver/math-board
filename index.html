@@ -2,12 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>MathBoard Pro - V2</title>
+    <title>MathBoard Pro - V3</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            /* Слегка приглушенная сетка, чтобы не отвлекать от текста */
             background-color: #1a1a1f;
             background-image: radial-gradient(#2d2d38 1.5px, transparent 1.5px);
             background-size: 25px 25px;
@@ -18,46 +17,50 @@
             display: block;
             cursor: crosshair;
         }
+        /* Ползунок толщины в левом нижнем углу */
+        .thickness-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(30, 30, 36, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+        input[type=range] {
+            accent-color: #ffffff;
+            cursor: pointer;
+            width: 120px;
+        }
+        /* Только кружок цвета в правом нижнем углу */
         .status-panel {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
             background: rgba(30, 30, 36, 0.8);
-            padding: 10px 20px;
+            padding: 10px;
             border-radius: 8px;
-            color: #888899;
-            font-size: 14px;
-            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .color-indicator {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background-color: #ffffff;
             box-shadow: 0 0 5px #ffffff;
-        }
-        .hotkeys-hint {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #555566;
-            font-size: 14px;
-            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-<div class="hotkeys-hint">
-    Цвета: <b>1</b> (Белый) | <b>2</b> (Желтый) | <b>3</b> (Мятный) | <b>4</b> (Красный)<br><br>
-    Отмена: <b>Ctrl + Z</b>
+<div class="thickness-panel">
+    <input type="range" id="thicknessSlider" min="0.5" max="8" step="0.5" value="1.5">
 </div>
 
 <div class="status-panel">
-    <span>Активный цвет:</span>
     <div id="activeColor" class="color-indicator"></div>
 </div>
 
@@ -67,30 +70,32 @@
     const canvas = document.getElementById('board');
     const ctx = canvas.getContext('2d', { desynchronized: true });
     const colorIndicator = document.getElementById('activeColor');
+    const thicknessSlider = document.getElementById('thicknessSlider');
 
     let isDrawing = false;
     let points = [];
-    
-    // Система истории для Ctrl+Z
     let historyStack = [];
     
-    // Настройки кисти
     const config = {
-        color: '#ffffff', // Белый по умолчанию
-        baseWidth: 1.5,   // Минимальная толщина (для легкого касания)
-        pressureMult: 12, // Множитель силы нажатия (чем больше, тем сильнее разница)
-        glow: 4           // Легкое свечение
+        color: '#ffffff', 
+        baseWidth: 1.5,   
+        pressureMult: 12, 
+        glow: 4           
     };
 
     const colors = {
-        '1': '#ffffff', // Белый
-        '2': '#ffea00', // Желтый
-        '3': '#00ffcc', // Мятный
-        '4': '#ff3366'  // Красный
+        'Digit1': '#ffffff', 
+        'Digit2': '#ffea00', 
+        'Digit3': '#00ffcc', 
+        'Digit4': '#ff3366'  
     };
 
+    // Слушатель для ползунка толщины
+    thicknessSlider.addEventListener('input', (e) => {
+        config.baseWidth = parseFloat(e.target.value);
+    });
+
     function resizeCanvas() {
-        // Сохраняем текущий рисунок перед ресайзом
         let tempImg = null;
         if (historyStack.length > 0) {
             tempImg = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -106,28 +111,25 @@
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
-        // Восстанавливаем рисунок после ресайза
         if (tempImg) ctx.putImageData(tempImg, 0, 0);
     }
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-    
-    // Сохраняем пустой экран как первый кадр истории
     saveState();
 
     function saveState() {
-        // Ограничиваем историю 20 шагами, чтобы не забить оперативку
-        if (historyStack.length > 20) historyStack.shift(); 
+        if (historyStack.length > 30) historyStack.shift(); 
         historyStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
     }
 
     function undo() {
         if (historyStack.length > 1) {
-            historyStack.pop(); // Удаляем текущее состояние
-            ctx.putImageData(historyStack[historyStack.length - 1], 0, 0); // Отрисовываем предыдущее
+            historyStack.pop(); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.putImageData(historyStack[historyStack.length - 1], 0, 0); 
         } else if (historyStack.length === 1) {
-            // Если остался только начальный пустой кадр
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.putImageData(historyStack[0], 0, 0);
         }
     }
@@ -138,12 +140,12 @@
         colorIndicator.style.boxShadow = `0 0 5px ${hex}`;
     }
 
-    // Горячие клавиши
+    // Горячие клавиши (теперь независимы от языка раскладки)
     window.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+        if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
             undo();
-        } else if (colors[e.key]) {
-            changeColor(colors[e.key]);
+        } else if (colors[e.code]) {
+            changeColor(colors[e.code]);
         }
     });
 
@@ -153,7 +155,10 @@
     }
 
     canvas.addEventListener('pointerdown', e => {
-        if (e.button !== 0 && e.pointerType === 'mouse') return; // Только левая кнопка мыши или перо
+        // Игнорируем клики по ползунку
+        if (e.target === thicknessSlider) return;
+        if (e.button !== 0 && e.pointerType === 'mouse') return; 
+        
         isDrawing = true;
         points = [];
         
@@ -173,8 +178,7 @@
         drawLastSegment();
     });
 
-    // Сохраняем шаг в историю только когда отрываем перо от экрана
-    canvas.addEventListener('pointerup', () => {
+    canvas.addEventListener('pointerup', (e) => {
         if (isDrawing) {
             isDrawing = false;
             saveState();
@@ -192,7 +196,6 @@
         const mid1 = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
         const mid2 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 
-        // Новая формула толщины: база + сильная реакция на нажатие
         ctx.lineWidth = config.baseWidth + (p2.pressure * config.pressureMult);
 
         ctx.beginPath();
