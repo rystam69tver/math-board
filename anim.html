@@ -6,7 +6,7 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     
     <style>
         body {
@@ -28,7 +28,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            font-size: 60px; /* Размер идеальных формул */
+            font-size: 60px;
         }
 
         .step {
@@ -48,27 +48,39 @@
 
 <div class="math-container">
     <div class="step" id="step0">$$ \text{Вычислить: } \sqrt{65^2 - 56^2} $$</div>
-    
-    <div class="step" id="step1">$$ = \sqrt{\color{#ffea00}{(65 - 56)(65 + 56)}} $$</div>
-    
+    <div class="step" id="step1">$$ = \sqrt{\textcolor{#ffea00}{(65 - 56)(65 + 56)}} $$</div>
     <div class="step" id="step2">$$ = \sqrt{9 \cdot 121} $$</div>
-    
     <div class="step" id="step3">$$ = 3 \cdot 11 $$</div>
-    
-    <div class="step" id="step4">$$ = \color{#00ffcc}{33} $$</div>
+    <div class="step" id="step4">$$ = \textcolor{#00ffcc}{33} $$</div>
 </div>
 
 <script>
+    // 1. Ждем полной загрузки DOM, затем рендерим LaTeX
+    document.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false 
+        });
+    });
+
+    // 2. Логика пошагового появления
     let currentStep = 0;
     const totalSteps = 5;
+    
     window.addEventListener('click', () => {
         if (currentStep < totalSteps) {
             document.getElementById('step' + currentStep).classList.add('active');
             currentStep++;
         }
     });
+    
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' || e.code === 'ArrowRight') window.dispatchEvent(new Event('click'));
+        if (e.code === 'Space' || e.code === 'ArrowRight') {
+            window.dispatchEvent(new Event('click'));
+        }
     });
 </script>
 </body>
