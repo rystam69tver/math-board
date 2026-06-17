@@ -28,43 +28,44 @@
             user-select: none;
         }
 
-        /* Контейнер для центрирования всего в 9:16 */
         .viewport-9-16 {
             position: relative;
             width: 100%;
-            max-width: 405px; /* Примерная ширина зоны 9:16 на мониторе */
+            max-width: 405px;
             height: 100%;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
         }
 
-        /* Задание: начальное состояние (в центре, большое) */
+        /* Идеально плавная анимация заголовка */
         #task-header {
             position: absolute;
-            z-index: 10;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
-            width: 100%;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            transform-origin: top left;
+            transition: top 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        left 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 1.2s ease;
             font-size: 45px;
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+            z-index: 10;
         }
 
-        /* Задание: состояние после клика (в углу, маленькое) */
         #task-header.minimized {
-            top: 60px; /* Отступ сверху, чтобы не перекрывалось меню Shorts */
+            top: 60px;
             left: 20px;
-            text-align: left;
-            font-size: 24px;
+            transform: translate(0, 0) scale(0.55);
             opacity: 0.8;
-            transform: scale(0.9);
         }
 
-        /* Контейнер для шагов решения */
         .steps-container {
-            margin-top: 100px; /* Чтобы не наезжать на минимизированный заголовок */
+            margin-top: 160px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -73,10 +74,11 @@
             box-sizing: border-box;
         }
 
+        /* Медленное и плавное выплывание решений */
         .step {
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s ease-out;
+            transform: translateY(60px); /* Стартует глубже снизу */
+            transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); /* Долгая, тягучая анимация */
             font-size: 38px;
         }
 
@@ -85,7 +87,6 @@
             transform: translateY(0);
         }
 
-        /* Водяной знак Эйлера (твой стиль) */
         .euler-mark {
             position: absolute;
             bottom: 20px;
@@ -114,7 +115,6 @@
 </div>
 
 <script>
-    // Рендерим LaTeX при загрузке
     document.addEventListener("DOMContentLoaded", () => {
         renderMathInElement(document.body, {
             delimiters: [
@@ -127,15 +127,15 @@
 
     let currentStep = 0;
     const taskHeader = document.getElementById('task-header');
-    const totalSteps = 4; // Количество шагов решения
+    const totalSteps = 4;
 
     window.addEventListener('click', () => {
-        // Первый клик: уменьшаем заголовок и показываем первый шаг
         if (currentStep === 0) {
             taskHeader.classList.add('minimized');
+            // Задержка: ждем 0.6 сек, пока заголовок плавно уезжает, затем выпускаем решение
             setTimeout(() => {
                 showNextStep();
-            }, 400); // Небольшая задержка, чтобы заголовок начал улетать первым
+            }, 600);
         } else {
             showNextStep();
         }
