@@ -2,63 +2,119 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Math Animation - LaTeX Edition</title>
+    <title>Math Animation - Pro Shorts Edition</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     
     <style>
+        :root {
+            --neon-mint: #00ffcc;
+            --neon-yellow: #ffea00;
+            --bg-dark: #1a1a1f;
+        }
+
         body {
             margin: 0;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #1a1a1f;
+            background-color: var(--bg-dark);
             background-image: radial-gradient(#262631 1.5px, transparent 1.5px);
             background-size: 30px 30px;
             color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             cursor: pointer;
             user-select: none;
         }
 
-        .math-container {
+        /* Контейнер для центрирования всего в 9:16 */
+        .viewport-9-16 {
+            position: relative;
+            width: 100%;
+            max-width: 405px; /* Примерная ширина зоны 9:16 на мониторе */
+            height: 100%;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            font-size: 40px;
-            padding: 0 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Задание: начальное состояние (в центре, большое) */
+        #task-header {
+            position: absolute;
+            z-index: 10;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
             width: 100%;
-            max-width: 100vw;
+            font-size: 45px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Задание: состояние после клика (в углу, маленькое) */
+        #task-header.minimized {
+            top: 60px; /* Отступ сверху, чтобы не перекрывалось меню Shorts */
+            left: 20px;
+            text-align: left;
+            font-size: 24px;
+            opacity: 0.8;
+            transform: scale(0.9);
+        }
+
+        /* Контейнер для шагов решения */
+        .steps-container {
+            margin-top: 100px; /* Чтобы не наезжать на минимизированный заголовок */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            padding: 0 20px;
             box-sizing: border-box;
         }
 
         .step {
             opacity: 0;
             transform: translateY(20px);
-            transition: all 0.6s ease-out;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease-out;
+            font-size: 38px;
         }
 
         .step.active {
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Водяной знак Эйлера (твой стиль) */
+        .euler-mark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 14px;
+            opacity: 0.3;
+            color: var(--neon-mint);
+        }
     </style>
 </head>
 <body>
 
-<div class="math-container">
-    <div class="step" id="step0">$$ \text{Вычислить: } \sqrt{65^2 - 56^2} $$</div>
-    <div class="step" id="step1">$$ = \sqrt{\textcolor{#ffea00}{(65 - 56)(65 + 56)}} $$</div>
-    <div class="step" id="step2">$$ = \sqrt{9 \cdot 121} $$</div>
-    <div class="step" id="step3">$$ = 3 \cdot 11 $$</div>
-    <div class="step" id="step4">$$ = \textcolor{#00ffcc}{33} $$</div>
+<div class="viewport-9-16">
+    <div id="task-header">
+        $$ \text{Вычислить: } \sqrt{65^2 - 56^2} $$
+    </div>
+
+    <div class="steps-container">
+        <div class="step" id="step1">$$ = \sqrt{\textcolor{#ffea00}{(65 - 56)(65 + 56)}} $$</div>
+        <div class="step" id="step2">$$ = \sqrt{9 \cdot 121} $$</div>
+        <div class="step" id="step3">$$ = 3 \cdot 11 $$</div>
+        <div class="step" id="step4">$$ = \textcolor{#00ffcc}{33} $$</div>
+    </div>
+
+    <div class="euler-mark">$$ e^{i\pi} + 1 = 0 $$</div>
 </div>
 
 <script>
+    // Рендерим LaTeX при загрузке
     document.addEventListener("DOMContentLoaded", () => {
         renderMathInElement(document.body, {
             delimiters: [
@@ -70,19 +126,31 @@
     });
 
     let currentStep = 0;
-    const totalSteps = 5;
-    
+    const taskHeader = document.getElementById('task-header');
+    const totalSteps = 4; // Количество шагов решения
+
     window.addEventListener('click', () => {
-        if (currentStep < totalSteps) {
-            document.getElementById('step' + currentStep).classList.add('active');
-            currentStep++;
+        // Первый клик: уменьшаем заголовок и показываем первый шаг
+        if (currentStep === 0) {
+            taskHeader.classList.add('minimized');
+            setTimeout(() => {
+                showNextStep();
+            }, 400); // Небольшая задержка, чтобы заголовок начал улетать первым
+        } else {
+            showNextStep();
         }
     });
+
+    function showNextStep() {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            const step = document.getElementById('step' + currentStep);
+            if (step) step.classList.add('active');
+        }
+    }
     
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' || e.code === 'ArrowRight') {
-            window.dispatchEvent(new Event('click'));
-        }
+        if (e.code === 'Space' || e.code === 'ArrowRight') window.dispatchEvent(new Event('click'));
     });
 </script>
 </body>
