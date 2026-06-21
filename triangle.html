@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неравенство Треугольника</title>
+    <title>Неравенство Треугольника - Полная версия</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
@@ -18,322 +18,164 @@
             position: relative;
         }
         svg { width: 100%; height: 100%; }
-        
-        /* Стили для текста задания */
-        #task-text {
-            position: absolute; top: 45%; left: 5%; right: 5%;
-            text-align: center; font-size: 28px; line-height: 1.5;
-            transition: transform 1s ease, opacity 1s ease;
-        }
-        .slide-up { transform: translateY(-300px); opacity: 0.6; font-size: 22px; }
 
-        /* Неоновые линии */
+        /* Линии и свечение */
         svg path, svg line { stroke-width: 5; fill: none; stroke-linecap: round; }
-        
         .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
         .leg1-line { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); }
         .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
-        
-        /* Дуги окружностей (следы от вращения) */
-        .arc-trace { stroke-width: 3; opacity: 0.5; stroke-dasharray: 500; stroke-dashoffset: 500; }
+        .success-line { stroke: #00ff00; filter: drop-shadow(0 0 8px #00ff00); }
+
+        /* Следы от циркуля */
+        .arc-trace { stroke-width: 3; opacity: 0.5; stroke-dasharray: 600; stroke-dashoffset: 600; }
         .arc1 { stroke: #ffd700; }
         .arc2 { stroke: #ff4500; }
+        .arc-success { stroke: #00ff00; }
 
-        .real-triangle { stroke: #00ff00; filter: drop-shadow(0 0 8px #00ff00); }
-
-        /* Анимация плавного появления линий */
-        .draw {
-            stroke-dasharray: 600; stroke-dashoffset: 600;
-            animation: drawing 1.5s ease-out forwards;
-        }
+        /* Анимации рисования */
+        .draw { animation: drawing 1.5s ease-out forwards; }
+        .draw-fast { stroke-dasharray: 600; stroke-dashoffset: 600; animation: drawing 0.8s ease-out forwards; }
         @keyframes drawing { to { stroke-dashoffset: 0; } }
 
-        /* Анимация вращения отрезков (эффект падения) */
+        /* Анимация вращения (Провал) */
         .fall-right { animation: fallR 1.5s ease-in-out forwards; }
-        @keyframes fallR { to { transform: translate(150px, 450px) rotate(90deg); } }
-
+        @keyframes fallR { to { transform: translate(150px, 600px) rotate(90deg); } }
         .fall-left { animation: fallL 1.5s ease-in-out forwards; }
-        @keyframes fallL { to { transform: translate(450px, 450px) rotate(-90deg); } }
+        @keyframes fallL { to { transform: translate(450px, 600px) rotate(-90deg); } }
 
-        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; }
-        
+        /* Анимация букв */
+        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; transition: opacity 0.5s; }
+        .label-large { fill: #fff; font-size: 28px; font-style: italic; font-family: serif; }
+
         /* Состояния элементов */
-        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.8s; }
+        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.8s; pointer-events: none; }
         .visible { visibility: visible; opacity: 1; }
-        .fade-out { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+        .fade-out { opacity: 0; transition: opacity 0.5s; }
 
-        #formula {
-            position: absolute; bottom: 8%; left: 0; width: 100%;
-            text-align: center; font-size: 26px;
+        /* Формулы */
+        #formula-box {
+            position: absolute; bottom: 10%; left: 0; width: 100%;
+            text-align: center; font-size: 28px;
         }
     </style>
 </head>
 <body>
 
 <div id="scene">
-    <div id="task-text">
-        Существует ли треугольник<br>со сторонами 1, 2 и 4?
-    </div>
-
     <svg viewBox="0 0 600 900">
-        <g id="step1" class="hidden">
-            <line x1="150" y1="450" x2="450" y2="450" class="base-line" id="baseLine" />
-            <text x="290" y="490" class="label" style="fill: #00ffff;">4</text>
+        <g id="base-group">
+            <line x1="150" y1="600" x2="450" y2="600" class="base-line hidden" id="baseLine" stroke-dasharray="300" stroke-dashoffset="300" />
+            <text x="290" y="640" class="label hidden" id="label-base-num" style="fill: #00ffff;">4</text>
+            <text x="290" y="640" class="label-large hidden" id="label-base-let" style="fill: #00ffff;">c</text>
         </g>
 
-        <g id="step2-3">
-            <g id="leg1-group" transform="translate(150, 450)">
-                <line x1="0" y1="0" x2="0" y2="-75" class="leg1-line hidden" id="leg1" />
-                <text x="-25" y="-35" class="label hidden" style="fill: #ffd700;" id="text1">1</text>
+        <g id="fail-scene" class="hidden">
+            <g id="leg1-group" transform="translate(150, 600)">
+                <line x1="0" y1="0" x2="0" y2="-75" class="leg1-line" />
+                <text x="-25" y="-35" class="label" style="fill: #ffd700;">1</text>
             </g>
-            <g id="leg2-group" transform="translate(450, 450)">
-                <line x1="0" y1="0" x2="0" y2="-150" class="leg2-line hidden" id="leg2" />
-                <text x="15" y="-70" class="label hidden" style="fill: #ff4500;" id="text2">2</text>
+            <g id="leg2-group" transform="translate(450, 600)">
+                <line x1="0" y1="0" x2="0" y2="-150" class="leg2-line" />
+                <text x="15" y="-70" class="label" style="fill: #ff4500;">2</text>
             </g>
+            <path d="M 150 525 A 75 75 0 0 1 225 600" class="arc-trace arc1 hidden" id="fail-arc1" />
+            <path d="M 450 450 A 150 150 0 0 0 300 600" class="arc-trace arc2 hidden" id="fail-arc2" />
+        </g>
+
+        <g id="success-scene" class="hidden">
+            <path d="M 150 600 A 230 230 0 0 1 380 430" class="arc-trace arc-success hidden" id="succ-arc1" />
+            <path d="M 450 600 A 230 230 0 0 0 220 430" class="arc-trace arc-success hidden" id="succ-arc2" />
             
-            <path d="M 150 375 A 75 75 0 0 1 225 450" class="arc-trace arc1 hidden" id="arc1" />
-            <path d="M 450 300 A 150 150 0 0 0 300 450" class="arc-trace arc2 hidden" id="arc2" />
-        </g>
-
-        <g id="step4" class="hidden">
-            <path d="M 150 450 L 347 341 L 450 450" class="real-triangle draw" />
-            <text x="220" y="380" class="label" style="fill: #00ff00;">3</text>
-            <text x="400" y="380" class="label" style="fill: #00ff00;">2</text>
-            <text x="250" y="320" class="label" style="font-size: 18px;">В обход</text>
+            <line x1="150" y1="600" x2="300" y2="425" class="success-line hidden" id="succ-line1" />
+            <line x1="450" y1="600" x2="300" y2="425" class="success-line hidden" id="succ-line2" />
+            
+            <text x="190" y="500" class="label hidden" id="label-succ1" style="fill: #00ff00;">3</text>
+            <text x="390" y="500" class="label hidden" id="label-succ2" style="fill: #00ff00;">3</text>
+            
+            <text x="190" y="500" class="label-large hidden" id="label-let1" style="fill: #00ff00;">a</text>
+            <text x="390" y="500" class="label-large hidden" id="label-let2" style="fill: #00ff00;">b</text>
         </g>
     </svg>
 
-    <div id="formula" class="hidden"></div>
+    <div id="formula-box" class="hidden"></div>
 </div>
 
 <script>
-    window.onload = function() {
-        const txt = "\\text{Большая сторона} < \\text{Сумма двух других}";
-        katex.render(txt, document.getElementById('formula'), { throwOnError: false });
-    };
-
     let currentStep = 0;
     
     function nextStep() {
         currentStep++;
         
+        // ШАГ 1: Появляется база (4)
         if (currentStep === 1) {
-            // Текст улетает вверх, рисуется база (4)
-            document.getElementById('task-text').classList.add('slide-up');
-            document.getElementById('step1').classList.remove('hidden');
-            document.getElementById('step1').classList.add('visible');
-            document.getElementById('baseLine').classList.add('draw');
+            document.getElementById('baseLine').classList.remove('hidden');
+            document.getElementById('baseLine').classList.add('draw', 'visible');
+            setTimeout(() => document.getElementById('label-base-num').classList.add('visible'), 1000);
         } 
+        // ШАГ 2: Вылезают маленькие стороны
         else if (currentStep === 2) {
-            // Выезжают отрезки (1 и 2) из концов
-            document.getElementById('leg1').classList.remove('hidden');
-            document.getElementById('leg1').classList.add('draw', 'visible');
-            document.getElementById('leg2').classList.remove('hidden');
-            document.getElementById('leg2').classList.add('draw', 'visible');
-            
-            // Показываем подписи после анимации (через 500мс)
-            setTimeout(() => {
-                document.getElementById('text1').classList.remove('hidden');
-                document.getElementById('text1').classList.add('visible');
-                document.getElementById('text2').classList.remove('hidden');
-                document.getElementById('text2').classList.add('visible');
-            }, 500);
+            document.getElementById('fail-scene').classList.remove('hidden');
+            document.getElementById('fail-scene').classList.add('visible');
         } 
+        // ШАГ 3: Маленькие стороны падают (не пересекаются)
         else if (currentStep === 3) {
-            // Вращение отрезков (эффект циркуля)
             document.getElementById('leg1-group').classList.add('fall-right');
             document.getElementById('leg2-group').classList.add('fall-left');
-            
-            // Отрисовка дуги
-            document.getElementById('arc1').classList.remove('hidden');
-            document.getElementById('arc1').classList.add('draw', 'visible');
-            document.getElementById('arc2').classList.remove('hidden');
-            document.getElementById('arc2').classList.add('draw', 'visible');
+            document.getElementById('fail-arc1').classList.remove('hidden');
+            document.getElementById('fail-arc1').classList.add('draw', 'visible');
+            document.getElementById('fail-arc2').classList.remove('hidden');
+            document.getElementById('fail-arc2').classList.add('draw', 'visible');
         }
+        // ШАГ 4: Сброс провала, рисуем дуги успеха
         else if (currentStep === 4) {
-            // Скрываем неудачные отрезки и дуги, показываем правильный треугольник
-            document.getElementById('step2-3').classList.add('fade-out');
-            setTimeout(() => {
-                document.getElementById('step4').classList.remove('hidden');
-                document.getElementById('step4').classList.add('visible');
-            }, 300); // Небольшая задержка для плавности
-        }
-        else if (currentStep === 5) {
-            // Выводим финальное правило KaTeX
-            document.getElementById('formula').classList.remove('hidden');
-            document.getElementById('formula').classList.add('visible');
-        }
-    }
-
-    document.body.addEventListener('click', nextStep);
-    document.addEventListener('keydown', (e) => { if (e.code === 'Space') nextStep(); });
-</script>
-
-</body>
-</html><!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неравенство Треугольника</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <style>
-        body {
-            margin: 0; padding: 0; background-color: #1a1a1d;
-            color: #fff; font-family: 'Segoe UI', Arial, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; cursor: pointer;
-        }
-        #scene {
-            width: 100vw; height: 100vh; max-width: 600px; max-height: 900px;
-            position: relative;
-        }
-        svg { width: 100%; height: 100%; }
-        
-        /* Стили для текста задания */
-        #task-text {
-            position: absolute; top: 45%; left: 5%; right: 5%;
-            text-align: center; font-size: 28px; line-height: 1.5;
-            transition: transform 1s ease, opacity 1s ease;
-        }
-        .slide-up { transform: translateY(-300px); opacity: 0.6; font-size: 22px; }
-
-        /* Неоновые линии */
-        svg path, svg line { stroke-width: 5; fill: none; stroke-linecap: round; }
-        
-        .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
-        .leg1-line { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); }
-        .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
-        
-        /* Дуги окружностей (следы от вращения) */
-        .arc-trace { stroke-width: 3; opacity: 0.5; stroke-dasharray: 500; stroke-dashoffset: 500; }
-        .arc1 { stroke: #ffd700; }
-        .arc2 { stroke: #ff4500; }
-
-        .real-triangle { stroke: #00ff00; filter: drop-shadow(0 0 8px #00ff00); }
-
-        /* Анимация плавного появления линий */
-        .draw {
-            stroke-dasharray: 600; stroke-dashoffset: 600;
-            animation: drawing 1.5s ease-out forwards;
-        }
-        @keyframes drawing { to { stroke-dashoffset: 0; } }
-
-        /* Анимация вращения отрезков (эффект падения) */
-        .fall-right { animation: fallR 1.5s ease-in-out forwards; }
-        @keyframes fallR { to { transform: translate(150px, 450px) rotate(90deg); } }
-
-        .fall-left { animation: fallL 1.5s ease-in-out forwards; }
-        @keyframes fallL { to { transform: translate(450px, 450px) rotate(-90deg); } }
-
-        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; }
-        
-        /* Состояния элементов */
-        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.8s; }
-        .visible { visibility: visible; opacity: 1; }
-        .fade-out { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
-
-        #formula {
-            position: absolute; bottom: 8%; left: 0; width: 100%;
-            text-align: center; font-size: 26px;
-        }
-    </style>
-</head>
-<body>
-
-<div id="scene">
-    <div id="task-text">
-        Существует ли треугольник<br>со сторонами 1, 2 и 4?
-    </div>
-
-    <svg viewBox="0 0 600 900">
-        <g id="step1" class="hidden">
-            <line x1="150" y1="450" x2="450" y2="450" class="base-line" id="baseLine" />
-            <text x="290" y="490" class="label" style="fill: #00ffff;">4</text>
-        </g>
-
-        <g id="step2-3">
-            <g id="leg1-group" transform="translate(150, 450)">
-                <line x1="0" y1="0" x2="0" y2="-75" class="leg1-line hidden" id="leg1" />
-                <text x="-25" y="-35" class="label hidden" style="fill: #ffd700;" id="text1">1</text>
-            </g>
-            <g id="leg2-group" transform="translate(450, 450)">
-                <line x1="0" y1="0" x2="0" y2="-150" class="leg2-line hidden" id="leg2" />
-                <text x="15" y="-70" class="label hidden" style="fill: #ff4500;" id="text2">2</text>
-            </g>
+            document.getElementById('fail-scene').classList.add('fade-out');
+            document.getElementById('success-scene').classList.remove('hidden');
+            document.getElementById('success-scene').classList.add('visible');
             
-            <path d="M 150 375 A 75 75 0 0 1 225 450" class="arc-trace arc1 hidden" id="arc1" />
-            <path d="M 450 300 A 150 150 0 0 0 300 450" class="arc-trace arc2 hidden" id="arc2" />
-        </g>
-
-        <g id="step4" class="hidden">
-            <path d="M 150 450 L 347 341 L 450 450" class="real-triangle draw" />
-            <text x="220" y="380" class="label" style="fill: #00ff00;">3</text>
-            <text x="400" y="380" class="label" style="fill: #00ff00;">2</text>
-            <text x="250" y="320" class="label" style="font-size: 18px;">В обход</text>
-        </g>
-    </svg>
-
-    <div id="formula" class="hidden"></div>
-</div>
-
-<script>
-    window.onload = function() {
-        const txt = "\\text{Большая сторона} < \\text{Сумма двух других}";
-        katex.render(txt, document.getElementById('formula'), { throwOnError: false });
-    };
-
-    let currentStep = 0;
-    
-    function nextStep() {
-        currentStep++;
-        
-        if (currentStep === 1) {
-            // Текст улетает вверх, рисуется база (4)
-            document.getElementById('task-text').classList.add('slide-up');
-            document.getElementById('step1').classList.remove('hidden');
-            document.getElementById('step1').classList.add('visible');
-            document.getElementById('baseLine').classList.add('draw');
-        } 
-        else if (currentStep === 2) {
-            // Выезжают отрезки (1 и 2) из концов
-            document.getElementById('leg1').classList.remove('hidden');
-            document.getElementById('leg1').classList.add('draw', 'visible');
-            document.getElementById('leg2').classList.remove('hidden');
-            document.getElementById('leg2').classList.add('draw', 'visible');
-            
-            // Показываем подписи после анимации (через 500мс)
             setTimeout(() => {
-                document.getElementById('text1').classList.remove('hidden');
-                document.getElementById('text1').classList.add('visible');
-                document.getElementById('text2').classList.remove('hidden');
-                document.getElementById('text2').classList.add('visible');
+                document.getElementById('succ-arc1').classList.remove('hidden');
+                document.getElementById('succ-arc1').classList.add('draw', 'visible');
+                document.getElementById('succ-arc2').classList.remove('hidden');
+                document.getElementById('succ-arc2').classList.add('draw', 'visible');
             }, 500);
-        } 
-        else if (currentStep === 3) {
-            // Вращение отрезков (эффект циркуля)
-            document.getElementById('leg1-group').classList.add('fall-right');
-            document.getElementById('leg2-group').classList.add('fall-left');
-            
-            // Отрисовка дуги
-            document.getElementById('arc1').classList.remove('hidden');
-            document.getElementById('arc1').classList.add('draw', 'visible');
-            document.getElementById('arc2').classList.remove('hidden');
-            document.getElementById('arc2').classList.add('draw', 'visible');
         }
-        else if (currentStep === 4) {
-            // Скрываем неудачные отрезки и дуги, показываем правильный треугольник
-            document.getElementById('step2-3').classList.add('fade-out');
-            setTimeout(() => {
-                document.getElementById('step4').classList.remove('hidden');
-                document.getElementById('step4').classList.add('visible');
-            }, 300); // Небольшая задержка для плавности
-        }
+        // ШАГ 5: Рисуем стороны треугольника в точку пересечения
         else if (currentStep === 5) {
-            // Выводим финальное правило KaTeX
-            document.getElementById('formula').classList.remove('hidden');
-            document.getElementById('formula').classList.add('visible');
+            document.getElementById('succ-line1').classList.remove('hidden');
+            document.getElementById('succ-line1').classList.add('draw-fast', 'visible');
+            document.getElementById('succ-line2').classList.remove('hidden');
+            document.getElementById('succ-line2').classList.add('draw-fast', 'visible');
+            
+            setTimeout(() => {
+                document.getElementById('label-succ1').classList.add('visible');
+                document.getElementById('label-succ2').classList.add('visible');
+            }, 800);
+        }
+        // ШАГ 6: Превращение в общее правило (цифры -> буквы)
+        else if (currentStep === 6) {
+            // Прячем дуги и цифры
+            document.getElementById('succ-arc1').classList.add('fade-out');
+            document.getElementById('succ-arc2').classList.add('fade-out');
+            document.getElementById('label-base-num').classList.add('hidden');
+            document.getElementById('label-succ1').classList.add('hidden');
+            document.getElementById('label-succ2').classList.add('hidden');
+            
+            // Показываем буквы a, b, c
+            setTimeout(() => {
+                document.getElementById('label-base-let').classList.remove('hidden');
+                document.getElementById('label-base-let').classList.add('visible');
+                document.getElementById('label-let1').classList.remove('hidden');
+                document.getElementById('label-let1').classList.add('visible');
+                document.getElementById('label-let2').classList.remove('hidden');
+                document.getElementById('label-let2').classList.add('visible');
+            }, 300);
+        }
+        // ШАГ 7: Вывод формулы KaTeX
+        else if (currentStep === 7) {
+            const formulaBox = document.getElementById('formula-box');
+            katex.render("c < a + b", formulaBox, { throwOnError: false });
+            formulaBox.classList.remove('hidden');
+            formulaBox.classList.add('visible');
         }
     }
 
