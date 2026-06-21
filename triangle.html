@@ -3,125 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неравенство Треугольника - Анимация</title>
+    <title>ОГЭ Задание 19 - Неравенство Треугольника</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         body {
-            margin: 0; padding: 0; background-color: #1a1a1d; /* Темный фон */
-            color: #fff; font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 0; background-color: #1a1a1d;
+            color: #fff; font-family: 'Segoe UI', Arial, sans-serif;
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
-            cursor: pointer; /* Указываем, что экран кликабелен */
+            height: 100vh; overflow: hidden; cursor: pointer;
         }
         #scene {
-            width: 90vw; height: 90vh; max-width: 600px; max-height: 900px;
+            width: 100vw; height: 100vh; max-width: 600px; max-height: 900px;
             position: relative;
         }
-        /* Стилизация SVG-линий с неоновым свечением */
-        svg path, svg line {
-            stroke-width: 5; fill: none; stroke-linecap: round;
-            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.7)); /* Свечение */
+        svg { width: 100%; height: 100%; }
+        
+        /* Стили для текста задания */
+        #task-text {
+            position: absolute; top: 40%; left: 5%; right: 5%;
+            text-align: center; font-size: 28px; line-height: 1.5;
+            transition: transform 1s ease, opacity 1s ease;
         }
-        .house-school { stroke: #00ffff; } /* Прямой путь - Циан */
-        .store-path { stroke: #ffd700; }   /* Путь через магазин - Золотой */
+        .slide-up { transform: translateY(-300px); opacity: 0.3; font-size: 20px; }
 
-        /* CSS для эффекта "рисования" линии */
-        .draw-line {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
+        /* Неоновые линии */
+        svg path, svg line, svg circle {
+            stroke-width: 5; fill: none; stroke-linecap: round;
+        }
+        .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
+        .circle-1 { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); stroke-dasharray: 6; }
+        .circle-2 { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); stroke-dasharray: 6; }
+        .real-triangle { stroke: #00ff00; filter: drop-shadow(0 0 8px #00ff00); }
+
+        /* Анимация рисования */
+        .draw {
+            stroke-dasharray: 1000; stroke-dashoffset: 1000;
             animation: drawing 2s ease-out forwards;
         }
         @keyframes drawing { to { stroke-dashoffset: 0; } }
 
-        /* Стили для текста и точек */
-        .point-label { fill: #fff; font-size: 24px; font-weight: bold; }
-        .dist-label { font-size: 20px; color: #fff; position: absolute; }
-
-        /* Изначально скрытые элементы */
-        .hidden { visibility: hidden; opacity: 0; transition: opacity 1s; }
+        .label { fill: #fff; font-size: 22px; font-weight: bold; font-family: monospace; }
+        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.8s; }
         .visible { visibility: visible; opacity: 1; }
 
-        #formula-container {
-            position: absolute; bottom: 5%; left: 0; width: 100%;
-            text-align: center; font-size: 2em;
+        #formula {
+            position: absolute; bottom: 8%; left: 0; width: 100%;
+            text-align: center; font-size: 26px;
         }
     </style>
 </head>
 <body>
 
 <div id="scene">
-    <svg width="100%" height="100%" viewBox="0 0 600 900">
-        <circle cx="100" cy="200" r="15" fill="#00ffff" id="pointA"/>
-        <text x="80" y="170" class="point-label">Дом (A)</text>
-        <circle cx="500" cy="200" r="15" fill="#00ffff" id="pointB"/>
-        <text x="480" y="170" class="point-label">Школа (B)</text>
-        
-        <line x1="115" y1="200" x2="485" y2="200" class="house-school hidden" id="lineAB"/>
+    <div id="task-text">
+        <b style="color: #ff4500;">Задание 19 из ОГЭ:</b><br>
+        Существует ли треугольник со сторонами 1, 2 и 4?
+    </div>
 
-        <circle cx="300" cy="600" r="15" fill="#ffd700" class="hidden" id="pointC"/>
-        <text x="280" y="650" class="point-label hidden" id="labelC">Магазин (C)</text>
-        
-        <path d="M 100 215 L 290 590" class="store-path hidden" id="lineAC"/>
-        <path d="M 310 590 L 500 215" class="store-path hidden" id="lineCB"/>
+    <svg viewBox="0 0 600 900">
+        <g id="step1" class="hidden">
+            <line x1="150" y1="450" x2="450" y2="450" class="base-line" />
+            <text x="290" y="490" class="label" style="fill: #00ffff;">4</text>
+        </g>
+
+        <g id="step2" class="hidden">
+            <circle cx="150" cy="450" r="65" class="circle-1" />
+            <text x="140" y="370" class="label" style="fill: #ffd700;">1</text>
+            
+            <circle cx="450" cy="450" r="130" class="circle-2" />
+            <text x="440" y="300" class="label" style="fill: #ff4500;">2</text>
+        </g>
+
+        <g id="step3" class="hidden">
+            <path d="M 150 450 L 280 250 L 450 450" class="real-triangle" />
+            <text x="190" y="340" class="label" style="fill: #00ff00;">3</text>
+            <text x="370" y="340" class="label" style="fill: #00ff00;">2</text>
+            <text x="270" y="230" class="label">В обход</text>
+        </g>
     </svg>
 
-    <div class="dist-label hidden" style="top: 160px; left: 280px; color: #00ffff;" id="distAB">500 м</div>
-    <div class="dist-label hidden" style="top: 380px; left: 150px; color: #ffd700;" id="distAC">300 м</div>
-    <div class="dist-label hidden" style="top: 380px; left: 420px; color: #ffd700;" id="distCB">400 м</div>
-
-    <div id="formula-container" class="hidden">
-        <div id="math-theory"></div>
-        <div id="math-numbers" style="font-size: 0.8em; margin-top: 10px;"></div>
-    </div>
+    <div id="formula" class="hidden"></div>
 </div>
 
 <script>
-    // Ждем загрузки KaTeX
     window.onload = function() {
-        const formula1 = "\\text{Дом} \\to \\text{Школа} < \\text{Дом} \\to \\text{Магаз} \\to \\text{Школа}";
-        const formula2 = "500 < 300 + 400";
-        katex.render(formula1, document.getElementById('math-theory'), { throwOnError: false });
-        katex.render(formula2, document.getElementById('math-numbers'), { throwOnError: false });
+        const txt = "\\text{Большая сторона} < \\text{Сумма двух других}";
+        katex.render(txt, document.getElementById('formula'), { throwOnError: false });
     };
 
     let currentStep = 0;
-    const steps = [
-        () => { // Шаг 1: Показываем прямую линию и дистанцию
-            document.getElementById('lineAB').classList.remove('hidden');
-            document.getElementById('lineAB').classList.add('visible', 'draw-line');
-            setTimeout(() => document.getElementById('distAB').classList.add('visible'), 1500);
-        },
-        () => { // Шаг 2: Показываем точку Магазина (C)
-            document.getElementById('pointC').classList.add('visible');
-            document.getElementById('labelC').classList.add('visible');
-        },
-        () => { // Шаг 3: "Рисуем" обходной путь через C
-            document.getElementById('lineAC').classList.remove('hidden');
-            document.getElementById('lineAC').classList.add('visible', 'draw-line');
-            document.getElementById('lineCB').classList.remove('hidden');
-            document.getElementById('lineCB').classList.add('visible', 'draw-line');
-            setTimeout(() => {
-                document.getElementById('distAC').classList.add('visible');
-                document.getElementById('distCB').classList.add('visible');
-            }, 1500);
-        },
-        () => { // Шаг 4: Показываем математический вывод
-            document.getElementById('formula-container').classList.add('visible');
-        }
-    ];
-
+    
     function nextStep() {
-        if (currentStep < steps.length) {
-            steps[currentStep]();
-            currentStep++;
+        currentStep++;
+        
+        if (currentStep === 1) {
+            // Уводим текст вверх и показываем отрезок 4
+            document.getElementById('task-text').classList.add('slide-up');
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step1').classList.add('visible');
+        } 
+        else if (currentStep === 2) {
+            // Включаем окружности
+            document.getElementById('step2').classList.remove('hidden');
+            document.getElementById('step2').classList.add('visible');
+        } 
+        else if (currentStep === 3) {
+            // Прячем окружности, показываем рабочий треугольник в обход
+            document.getElementById('step2').classList.remove('visible');
+            document.getElementById('step2').classList.add('hidden');
+            
+            document.getElementById('step3').classList.remove('hidden');
+            document.getElementById('step3').classList.add('visible');
+        } 
+        else if (currentStep === 4) {
+            // Выводим финальное правило KaTeX
+            document.getElementById('formula').classList.remove('hidden');
+            document.getElementById('formula').classList.add('visible');
         }
     }
 
-    // Обработка клика мыши или нажатия Пробела
     document.body.addEventListener('click', nextStep);
     document.addEventListener('keydown', (e) => { if (e.code === 'Space') nextStep(); });
-
 </script>
 
 </body>
