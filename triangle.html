@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ОГЭ Задание 19 - Неравенство Треугольника</title>
+    <title>Неравенство Треугольника</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
@@ -21,31 +21,46 @@
         
         /* Стили для текста задания */
         #task-text {
-            position: absolute; top: 40%; left: 5%; right: 5%;
+            position: absolute; top: 45%; left: 5%; right: 5%;
             text-align: center; font-size: 28px; line-height: 1.5;
             transition: transform 1s ease, opacity 1s ease;
         }
-        .slide-up { transform: translateY(-300px); opacity: 0.3; font-size: 20px; }
+        .slide-up { transform: translateY(-300px); opacity: 0.6; font-size: 22px; }
 
         /* Неоновые линии */
-        svg path, svg line, svg circle {
-            stroke-width: 5; fill: none; stroke-linecap: round;
-        }
+        svg path, svg line { stroke-width: 5; fill: none; stroke-linecap: round; }
+        
         .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
-        .circle-1 { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); stroke-dasharray: 6; }
-        .circle-2 { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); stroke-dasharray: 6; }
+        .leg1-line { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); }
+        .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
+        
+        /* Дуги окружностей (следы от вращения) */
+        .arc-trace { stroke-width: 3; opacity: 0.5; stroke-dasharray: 500; stroke-dashoffset: 500; }
+        .arc1 { stroke: #ffd700; }
+        .arc2 { stroke: #ff4500; }
+
         .real-triangle { stroke: #00ff00; filter: drop-shadow(0 0 8px #00ff00); }
 
-        /* Анимация рисования */
+        /* Анимация плавного появления линий */
         .draw {
-            stroke-dasharray: 1000; stroke-dashoffset: 1000;
-            animation: drawing 2s ease-out forwards;
+            stroke-dasharray: 600; stroke-dashoffset: 600;
+            animation: drawing 1.5s ease-out forwards;
         }
         @keyframes drawing { to { stroke-dashoffset: 0; } }
 
-        .label { fill: #fff; font-size: 22px; font-weight: bold; font-family: monospace; }
+        /* Анимация вращения отрезков (эффект падения) */
+        .fall-right { animation: fallR 1.5s ease-in-out forwards; }
+        @keyframes fallR { to { transform: translate(150px, 450px) rotate(90deg); } }
+
+        .fall-left { animation: fallL 1.5s ease-in-out forwards; }
+        @keyframes fallL { to { transform: translate(450px, 450px) rotate(-90deg); } }
+
+        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; }
+        
+        /* Состояния элементов */
         .hidden { visibility: hidden; opacity: 0; transition: opacity 0.8s; }
         .visible { visibility: visible; opacity: 1; }
+        .fade-out { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
 
         #formula {
             position: absolute; bottom: 8%; left: 0; width: 100%;
@@ -57,29 +72,34 @@
 
 <div id="scene">
     <div id="task-text">
-        <b style="color: #ff4500;">Задание 19 из ОГЭ:</b><br>
-        Существует ли треугольник со сторонами 1, 2 и 4?
+        Существует ли треугольник<br>со сторонами 1, 2 и 4?
     </div>
 
     <svg viewBox="0 0 600 900">
         <g id="step1" class="hidden">
-            <line x1="150" y1="450" x2="450" y2="450" class="base-line" />
+            <line x1="150" y1="450" x2="450" y2="450" class="base-line" id="baseLine" />
             <text x="290" y="490" class="label" style="fill: #00ffff;">4</text>
         </g>
 
-        <g id="step2" class="hidden">
-            <circle cx="150" cy="450" r="65" class="circle-1" />
-            <text x="140" y="370" class="label" style="fill: #ffd700;">1</text>
+        <g id="step2-3">
+            <g id="leg1-group" transform="translate(150, 450)">
+                <line x1="0" y1="0" x2="0" y2="-75" class="leg1-line hidden" id="leg1" />
+                <text x="-25" y="-35" class="label hidden" style="fill: #ffd700;" id="text1">1</text>
+            </g>
+            <g id="leg2-group" transform="translate(450, 450)">
+                <line x1="0" y1="0" x2="0" y2="-150" class="leg2-line hidden" id="leg2" />
+                <text x="15" y="-70" class="label hidden" style="fill: #ff4500;" id="text2">2</text>
+            </g>
             
-            <circle cx="450" cy="450" r="130" class="circle-2" />
-            <text x="440" y="300" class="label" style="fill: #ff4500;">2</text>
+            <path d="M 150 375 A 75 75 0 0 1 225 450" class="arc-trace arc1 hidden" id="arc1" />
+            <path d="M 450 300 A 150 150 0 0 0 300 450" class="arc-trace arc2 hidden" id="arc2" />
         </g>
 
-        <g id="step3" class="hidden">
-            <path d="M 150 450 L 280 250 L 450 450" class="real-triangle" />
-            <text x="190" y="340" class="label" style="fill: #00ff00;">3</text>
-            <text x="370" y="340" class="label" style="fill: #00ff00;">2</text>
-            <text x="270" y="230" class="label">В обход</text>
+        <g id="step4" class="hidden">
+            <path d="M 150 450 L 347 341 L 450 450" class="real-triangle draw" />
+            <text x="220" y="380" class="label" style="fill: #00ff00;">3</text>
+            <text x="400" y="380" class="label" style="fill: #00ff00;">2</text>
+            <text x="250" y="320" class="label" style="font-size: 18px;">В обход</text>
         </g>
     </svg>
 
@@ -98,25 +118,47 @@
         currentStep++;
         
         if (currentStep === 1) {
-            // Уводим текст вверх и показываем отрезок 4
+            // Текст улетает вверх, рисуется база (4)
             document.getElementById('task-text').classList.add('slide-up');
             document.getElementById('step1').classList.remove('hidden');
             document.getElementById('step1').classList.add('visible');
+            document.getElementById('baseLine').classList.add('draw');
         } 
         else if (currentStep === 2) {
-            // Включаем окружности
-            document.getElementById('step2').classList.remove('hidden');
-            document.getElementById('step2').classList.add('visible');
+            // Выезжают отрезки (1 и 2) из концов
+            document.getElementById('leg1').classList.remove('hidden');
+            document.getElementById('leg1').classList.add('draw', 'visible');
+            document.getElementById('leg2').classList.remove('hidden');
+            document.getElementById('leg2').classList.add('draw', 'visible');
+            
+            // Показываем подписи после анимации (через 500мс)
+            setTimeout(() => {
+                document.getElementById('text1').classList.remove('hidden');
+                document.getElementById('text1').classList.add('visible');
+                document.getElementById('text2').classList.remove('hidden');
+                document.getElementById('text2').classList.add('visible');
+            }, 500);
         } 
         else if (currentStep === 3) {
-            // Прячем окружности, показываем рабочий треугольник в обход
-            document.getElementById('step2').classList.remove('visible');
-            document.getElementById('step2').classList.add('hidden');
+            // Вращение отрезков (эффект циркуля)
+            document.getElementById('leg1-group').classList.add('fall-right');
+            document.getElementById('leg2-group').classList.add('fall-left');
             
-            document.getElementById('step3').classList.remove('hidden');
-            document.getElementById('step3').classList.add('visible');
-        } 
+            // Отрисовка дуги
+            document.getElementById('arc1').classList.remove('hidden');
+            document.getElementById('arc1').classList.add('draw', 'visible');
+            document.getElementById('arc2').classList.remove('hidden');
+            document.getElementById('arc2').classList.add('draw', 'visible');
+        }
         else if (currentStep === 4) {
+            // Скрываем неудачные отрезки и дуги, показываем правильный треугольник
+            document.getElementById('step2-3').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('step4').classList.remove('hidden');
+                document.getElementById('step4').classList.add('visible');
+            }, 300); // Небольшая задержка для плавности
+        }
+        else if (currentStep === 5) {
             // Выводим финальное правило KaTeX
             document.getElementById('formula').classList.remove('hidden');
             document.getElementById('formula').classList.add('visible');
