@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неравенство Треугольника - Полная версия</title>
+    <title>Неравенство Треугольника - Идеальная Анимация</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
@@ -19,43 +19,49 @@
         }
         svg { width: 100%; height: 100%; }
 
-        /* Линии и свечение */
+        /* Линии и их неоновое свечение */
         svg path, svg line { stroke-width: 5; fill: none; stroke-linecap: round; }
         .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
         .leg1-line { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); }
         .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
-        .success-line { stroke: #00ff00; filter: drop-shadow(0 0 8px #00ff00); }
+        .success-line { stroke: #00ff00; filter: drop-shadow(0 0 10px #00ff00); }
 
-        /* Следы от циркуля */
-        .arc-trace { stroke-width: 3; opacity: 0.5; stroke-dasharray: 600; stroke-dashoffset: 600; }
+        /* Следы от циркуля (дуги окружностей) */
+        .arc-trace { stroke-width: 3; opacity: 0.4; stroke-dasharray: 600; stroke-dashoffset: 600; }
         .arc1 { stroke: #ffd700; }
         .arc2 { stroke: #ff4500; }
         .arc-success { stroke: #00ff00; }
 
-        /* Анимации рисования */
-        .draw { animation: drawing 1.5s ease-out forwards; }
-        .draw-fast { stroke-dasharray: 600; stroke-dashoffset: 600; animation: drawing 0.8s ease-out forwards; }
+        /* Базовая анимация проявки линий */
+        .draw { animation: drawing 1.2s ease-out forwards; }
         @keyframes drawing { to { stroke-dashoffset: 0; } }
 
-        /* Анимация вращения (Провал) */
+        /* ВРАЩЕНИЕ: Сцена 1 (Падение вниз) */
         .fall-right { animation: fallR 1.5s ease-in-out forwards; }
         @keyframes fallR { to { transform: translate(150px, 600px) rotate(90deg); } }
+        
         .fall-left { animation: fallL 1.5s ease-in-out forwards; }
         @keyframes fallL { to { transform: translate(450px, 600px) rotate(-90deg); } }
 
-        /* Анимация букв */
-        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; transition: opacity 0.5s; }
-        .label-large { fill: #fff; font-size: 28px; font-style: italic; font-family: serif; }
+        /* ВРАЩЕНИЕ: Сцена 2 (Подъем вверх и встреча в точке) */
+        .rotate-up-left { animation: rotateUpL 1.5s ease-in-out forwards; }
+        @keyframes rotateUpL { to { transform: translate(150px, 600px) rotate(41.8deg); } }
 
-        /* Состояния элементов */
-        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.8s; pointer-events: none; }
+        .rotate-up-right { animation: rotateUpR 1.5s ease-in-out forwards; }
+        @keyframes rotateUpR { to { transform: translate(450px, 600px) rotate(-41.8deg); } }
+
+        /* Текстовые метки */
+        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; transition: opacity 0.5s; }
+        .label-large { fill: #fff; font-size: 32px; font-style: italic; font-family: serif; }
+
+        /* Управление видимостью */
+        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
         .visible { visibility: visible; opacity: 1; }
         .fade-out { opacity: 0; transition: opacity 0.5s; }
 
-        /* Формулы */
         #formula-box {
             position: absolute; bottom: 10%; left: 0; width: 100%;
-            text-align: center; font-size: 28px;
+            text-align: center; font-size: 32px;
         }
     </style>
 </head>
@@ -66,34 +72,38 @@
         <g id="base-group">
             <line x1="150" y1="600" x2="450" y2="600" class="base-line hidden" id="baseLine" stroke-dasharray="300" stroke-dashoffset="300" />
             <text x="290" y="640" class="label hidden" id="label-base-num" style="fill: #00ffff;">4</text>
-            <text x="290" y="640" class="label-large hidden" id="label-base-let" style="fill: #00ffff;">c</text>
+            <text x="290" y="645" class="label-large hidden" id="label-base-let" style="fill: #00ffff;">c</text>
         </g>
 
         <g id="fail-scene" class="hidden">
             <g id="leg1-group" transform="translate(150, 600)">
                 <line x1="0" y1="0" x2="0" y2="-75" class="leg1-line" />
-                <text x="-25" y="-35" class="label" style="fill: #ffd700;">1</text>
+                <text x="-25" y="-35" class="label">1</text>
             </g>
             <g id="leg2-group" transform="translate(450, 600)">
                 <line x1="0" y1="0" x2="0" y2="-150" class="leg2-line" />
-                <text x="15" y="-70" class="label" style="fill: #ff4500;">2</text>
+                <text x="15" y="-70" class="label">2</text>
             </g>
             <path d="M 150 525 A 75 75 0 0 1 225 600" class="arc-trace arc1 hidden" id="fail-arc1" />
             <path d="M 450 450 A 150 150 0 0 0 300 600" class="arc-trace arc2 hidden" id="fail-arc2" />
         </g>
 
         <g id="success-scene" class="hidden">
-            <path d="M 150 600 A 230 230 0 0 1 380 430" class="arc-trace arc-success hidden" id="succ-arc1" />
-            <path d="M 450 600 A 230 230 0 0 0 220 430" class="arc-trace arc-success hidden" id="succ-arc2" />
+            <g id="succ-leg1-group" transform="translate(150, 600)">
+                <line x1="0" y1="0" x2="0" y2="-225" class="success-line" />
+            </g>
+            <g id="succ-leg2-group" transform="translate(450, 600)">
+                <line x1="0" y1="0" x2="0" y2="-225" class="success-line" />
+            </g>
+
+            <path d="M 150 375 A 225 225 0 0 1 345 487" class="arc-trace arc-success hidden" id="succ-arc1" />
+            <path d="M 450 375 A 225 225 0 0 0 255 487" class="arc-trace arc-success hidden" id="succ-arc2" />
             
-            <line x1="150" y1="600" x2="300" y2="425" class="success-line hidden" id="succ-line1" />
-            <line x1="450" y1="600" x2="300" y2="425" class="success-line hidden" id="succ-line2" />
+            <text x="180" y="500" class="label hidden" id="label-succ1" style="fill: #00ff00;">3</text>
+            <text x="400" y="500" class="label hidden" id="label-succ2" style="fill: #00ff00;">3</text>
             
-            <text x="190" y="500" class="label hidden" id="label-succ1" style="fill: #00ff00;">3</text>
-            <text x="390" y="500" class="label hidden" id="label-succ2" style="fill: #00ff00;">3</text>
-            
-            <text x="190" y="500" class="label-large hidden" id="label-let1" style="fill: #00ff00;">a</text>
-            <text x="390" y="500" class="label-large hidden" id="label-let2" style="fill: #00ff00;">b</text>
+            <text x="180" y="500" class="label-large hidden" id="label-let1" style="fill: #00ff00;">a</text>
+            <text x="400" y="500" class="label-large hidden" id="label-let2" style="fill: #00ff00;">b</text>
         </g>
     </svg>
 
@@ -106,18 +116,15 @@
     function nextStep() {
         currentStep++;
         
-        // ШАГ 1: Появляется база (4)
         if (currentStep === 1) {
             document.getElementById('baseLine').classList.remove('hidden');
             document.getElementById('baseLine').classList.add('draw', 'visible');
             setTimeout(() => document.getElementById('label-base-num').classList.add('visible'), 1000);
         } 
-        // ШАГ 2: Вылезают маленькие стороны
         else if (currentStep === 2) {
             document.getElementById('fail-scene').classList.remove('hidden');
             document.getElementById('fail-scene').classList.add('visible');
         } 
-        // ШАГ 3: Маленькие стороны падают (не пересекаются)
         else if (currentStep === 3) {
             document.getElementById('leg1-group').classList.add('fall-right');
             document.getElementById('leg2-group').classList.add('fall-left');
@@ -126,41 +133,39 @@
             document.getElementById('fail-arc2').classList.remove('hidden');
             document.getElementById('fail-arc2').classList.add('draw', 'visible');
         }
-        // ШАГ 4: Сброс провала, рисуем дуги успеха
+        // ШАГ 4: Убираем старое, плавно вытягиваем вверх две новые палочки по 3
         else if (currentStep === 4) {
             document.getElementById('fail-scene').classList.add('fade-out');
-            document.getElementById('success-scene').classList.remove('hidden');
-            document.getElementById('success-scene').classList.add('visible');
-            
             setTimeout(() => {
-                document.getElementById('succ-arc1').classList.remove('hidden');
-                document.getElementById('succ-arc1').classList.add('draw', 'visible');
-                document.getElementById('succ-arc2').classList.remove('hidden');
-                document.getElementById('succ-arc2').classList.add('draw', 'visible');
+                document.getElementById('fail-scene').style.display = 'none';
+                document.getElementById('success-scene').classList.remove('hidden');
+                document.getElementById('success-scene').classList.add('visible');
             }, 500);
         }
-        // ШАГ 5: Рисуем стороны треугольника в точку пересечения
+        // ШАГ 5: Эпичное вращение навстречу друг другу + прорисовка пересекающихся окружностей
         else if (currentStep === 5) {
-            document.getElementById('succ-line1').classList.remove('hidden');
-            document.getElementById('succ-line1').classList.add('draw-fast', 'visible');
-            document.getElementById('succ-line2').classList.remove('hidden');
-            document.getElementById('succ-line2').classList.add('draw-fast', 'visible');
+            document.getElementById('succ-leg1-group').classList.add('rotate-up-left');
+            document.getElementById('succ-leg2-group').classList.add('rotate-up-right');
             
+            document.getElementById('succ-arc1').classList.remove('hidden');
+            document.getElementById('succ-arc1').classList.add('draw', 'visible');
+            document.getElementById('succ-arc2').classList.remove('hidden');
+            document.getElementById('succ-arc2').classList.add('draw', 'visible');
+            
+            // Как только палочки соединились — зажигаем цифры 3 и 3
             setTimeout(() => {
                 document.getElementById('label-succ1').classList.add('visible');
                 document.getElementById('label-succ2').classList.add('visible');
-            }, 800);
+            }, 1400);
         }
-        // ШАГ 6: Превращение в общее правило (цифры -> буквы)
+        // ШАГ 6: Магия трансформации: цифры [3, 3, 4] плавно заменяются на геометрию [a, b, c]
         else if (currentStep === 6) {
-            // Прячем дуги и цифры
             document.getElementById('succ-arc1').classList.add('fade-out');
             document.getElementById('succ-arc2').classList.add('fade-out');
             document.getElementById('label-base-num').classList.add('hidden');
             document.getElementById('label-succ1').classList.add('hidden');
             document.getElementById('label-succ2').classList.add('hidden');
             
-            // Показываем буквы a, b, c
             setTimeout(() => {
                 document.getElementById('label-base-let').classList.remove('hidden');
                 document.getElementById('label-base-let').classList.add('visible');
@@ -168,9 +173,9 @@
                 document.getElementById('label-let1').classList.add('visible');
                 document.getElementById('label-let2').classList.remove('hidden');
                 document.getElementById('label-let2').classList.add('visible');
-            }, 300);
+            }, 400);
         }
-        // ШАГ 7: Вывод формулы KaTeX
+        // ШАГ 7: Появление финального неравенства KaTeX
         else if (currentStep === 7) {
             const formulaBox = document.getElementById('formula-box');
             katex.render("c < a + b", formulaBox, { throwOnError: false });
