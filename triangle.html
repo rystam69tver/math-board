@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неравенство Треугольника - Идеальная Анимация</title>
+    <title>Геометрия ОГЭ - Неравенство треугольника</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
@@ -17,183 +17,137 @@
             width: 100vw; height: 100vh; max-width: 600px; max-height: 900px;
             position: relative;
         }
-        svg { width: 100%; height: 100%; transition: opacity 0.8s ease; }
+        svg { width: 100%; height: 100%; }
 
-        /* Линии и их неоновое свечение */
-        svg path, svg line { stroke-width: 5; fill: none; stroke-linecap: round; }
+        /* Текст задания */
+        #task-ui {
+            position: absolute; top: 45%; left: 5%; right: 5%;
+            text-align: center; font-size: 28px; line-height: 1.4;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20;
+        }
+        #task-ui.active { top: 5%; opacity: 0.4; font-size: 20px; }
+
+        /* Линии и неоновое свечение */
+        svg path, svg line { stroke-width: 6; fill: none; stroke-linecap: round; }
         .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
         .leg1-line { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); }
         .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
         .success-line { stroke: #00ff00; filter: drop-shadow(0 0 10px #00ff00); }
+        .final-line { stroke: #ff5f5f; filter: drop-shadow(0 0 10px #ff5f5f); } /* Приятный красный */
 
-        /* Следы от циркуля */
-        .arc-trace { stroke-width: 3; opacity: 0.4; stroke-dasharray: 600; stroke-dashoffset: 600; }
-        .arc1 { stroke: #ffd700; }
-        .arc2 { stroke: #ff4500; }
+        /* Дуги циркуля */
+        .arc-trace { stroke-width: 3; opacity: 0.3; stroke-dasharray: 800; stroke-dashoffset: 800; }
+        .arc-fail { stroke: #ff4500; }
         .arc-success { stroke: #00ff00; }
 
-        .draw { animation: drawing 1.2s ease-out forwards; }
-        @keyframes drawing { to { stroke-dashoffset: 0; } }
-
-        /* ВРАЩЕНИЕ: Сцена 1 (Неудача) */
+        /* Анимации вращения */
         .fall-right { animation: fallR 1.5s ease-in-out forwards; }
         @keyframes fallR { to { transform: translate(150px, 600px) rotate(90deg); } }
-        
         .fall-left { animation: fallL 1.5s ease-in-out forwards; }
         @keyframes fallL { to { transform: translate(450px, 600px) rotate(-90deg); } }
 
-        /* ВРАЩЕНИЕ: Сцена 2 (Успех со сторонами 3 и 2) */
-        .rotate-up-left { animation: rotateUpL 1.5s ease-in-out forwards; }
-        @keyframes rotateUpL { to { transform: translate(150px, 600px) rotate(61.1deg); } } /* Угол для стороны 3 */
+        .rotate-up-left { animation: rotUpL 1.5s ease-in-out forwards; }
+        @keyframes rotUpL { to { transform: translate(150px, 600px) rotate(61.1deg); } }
+        .rotate-up-right { animation: rotUpR 1.5s ease-in-out forwards; }
+        @keyframes rotUpR { to { transform: translate(450px, 600px) rotate(-43.5deg); } }
 
-        .rotate-up-right { animation: rotateUpR 1.5s ease-in-out forwards; }
-        @keyframes rotateUpR { to { transform: translate(450px, 600px) rotate(-43.5deg); } } /* Угол для стороны 2 */
+        /* Тексты внутри SVG */
+        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; }
+        .label-abc { font-size: 34px; font-style: italic; font-family: serif; }
+        #final-title { font-size: 32px; font-weight: bold; text-align: center; width: 100%; position: absolute; top: 25%; color: #ff5f5f; }
 
-        /* Тексты */
-        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; transition: opacity 0.5s; }
-        .label-large { fill: #fff; font-size: 32px; font-style: italic; font-family: serif; }
-
-        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
+        /* Утилиты */
+        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.6s; }
         .visible { visibility: visible; opacity: 1; }
-        .fade-out { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
-
-        /* Финальный отдельный кадр */
-        #final-frame {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            background-color: #1a1a1d; z-index: 10;
-        }
-        #final-formula {
-            font-size: 45px; filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
-        }
+        .draw { animation: drawing 1.2s ease-out forwards; }
+        @keyframes drawing { to { stroke-dashoffset: 0; } }
+        .fade-out { opacity: 0; transition: opacity 0.6s; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="scene">
+    <div id="task-ui">
+        Существует ли треугольник<br>со сторонами <b>1, 2 и 4</b>?
+    </div>
+
+    <div id="final-title" class="hidden">Неравенство треугольника</div>
+
     <svg viewBox="0 0 600 900" id="main-svg">
-        <g id="base-group">
-            <line x1="150" y1="600" x2="450" y2="600" class="base-line hidden" id="baseLine" stroke-dasharray="300" stroke-dashoffset="300" />
-            <text x="290" y="640" class="label hidden" id="label-base-num" style="fill: #00ffff;">4</text>
-            <text x="290" y="645" class="label-large hidden" id="label-base-let" style="fill: #00ffff;">c</text>
+        <g id="base-g" class="hidden">
+            <line x1="150" y1="600" x2="450" y2="600" class="base-line" stroke-dasharray="300" stroke-dashoffset="300" id="baseL"/>
+            <text x="290" y="645" class="label" id="label-4" style="fill:#00ffff">4</text>
+            <text x="290" y="645" class="label label-abc hidden" id="label-c">c</text>
         </g>
 
-        <g id="fail-scene" class="hidden">
-            <g id="leg1-group" transform="translate(150, 600)">
-                <line x1="0" y1="0" x2="0" y2="-75" class="leg1-line" />
-                <text x="-25" y="-35" class="label">1</text>
-            </g>
-            <g id="leg2-group" transform="translate(450, 600)">
-                <line x1="0" y1="0" x2="0" y2="-150" class="leg2-line" />
-                <text x="15" y="-70" class="label">2</text>
-            </g>
-            <path d="M 150 525 A 75 75 0 0 1 225 600" class="arc-trace arc1 hidden" id="fail-arc1" />
-            <path d="M 450 450 A 150 150 0 0 0 300 600" class="arc-trace arc2 hidden" id="fail-arc2" />
+        <g id="fail-g" class="hidden">
+            <g id="f-l" transform="translate(150, 600)"><line x1="0" y1="0" x2="0" y2="-75" class="leg1-line"/><text x="-25" y="-35" class="label">1</text></g>
+            <g id="f-r" transform="translate(450, 600)"><line x1="0" y1="0" x2="0" y2="-150" class="leg2-line"/><text x="15" y="-70" class="label">2</text></g>
+            <path d="M 150 525 A 75 75 0 0 1 225 600" class="arc-trace arc-fail" id="arc-f1"/>
+            <path d="M 450 450 A 150 150 0 0 0 300 600" class="arc-trace arc-fail" id="arc-f2"/>
         </g>
 
-        <g id="success-scene" class="hidden">
-            <g id="succ-leg1-group" transform="translate(150, 600)">
-                <line x1="0" y1="0" x2="0" y2="-225" class="success-line" />
-            </g>
-            <g id="succ-leg2-group" transform="translate(450, 600)">
-                <line x1="0" y1="0" x2="0" y2="-150" class="success-line" />
-            </g>
+        <g id="succ-g" class="hidden">
+            <g id="s-l" transform="translate(150, 600)"><line x1="0" y1="0" x2="0" y2="-225" class="success-line"/><text x="-25" y="-80" class="label" id="label-3">3</text></g>
+            <g id="s-r" transform="translate(450, 600)"><line x1="0" y1="0" x2="0" y2="-150" class="success-line"/><text x="15" y="-60" class="label" id="label-2">2</text></g>
+            <path d="M 150 375 A 225 225 0 0 1 347 491" class="arc-trace arc-success" id="arc-s1"/>
+            <path d="M 450 450 A 150 150 0 0 0 347 491" class="arc-trace arc-success" id="arc-s2"/>
+        </g>
 
-            <path d="M 150 375 A 225 225 0 0 1 347 491" class="arc-trace arc-success hidden" id="succ-arc1" />
-            <path d="M 450 450 A 150 150 0 0 0 347 491" class="arc-trace arc-success hidden" id="succ-arc2" />
-            
-            <text x="210" y="520" class="label hidden" id="label-succ1" style="fill: #00ff00;">3</text>
-            <text x="390" y="540" class="label hidden" id="label-succ2" style="fill: #00ff00;">2</text>
-            
-            <text x="210" y="520" class="label-large hidden" id="label-let1" style="fill: #00ff00;">a</text>
-            <text x="390" y="540" class="label-large hidden" id="label-let2" style="fill: #00ff00;">b</text>
+        <g id="final-g" class="hidden">
+            <path d="M 150 600 L 320 380 L 450 600 Z" class="final-line"/>
+            <text x="210" y="470" class="label label-abc" style="fill:#ff5f5f">a</text>
+            <text x="380" y="470" class="label label-abc" style="fill:#ff5f5f">b</text>
         </g>
     </svg>
-
-    <div id="final-frame" class="hidden">
-        <div id="final-formula"></div>
-    </div>
 </div>
 
 <script>
-    let currentStep = 0;
-    
-    function nextStep() {
-        currentStep++;
-        
-        if (currentStep === 1) {
-            document.getElementById('baseLine').classList.remove('hidden');
-            document.getElementById('baseLine').classList.add('draw', 'visible');
-            setTimeout(() => document.getElementById('label-base-num').classList.add('visible'), 1000);
+    let step = 0;
+    function next() {
+        step++;
+        if (step === 1) {
+            document.getElementById('task-ui').classList.add('active');
+            document.getElementById('base-g').classList.add('visible');
+            document.getElementById('baseL').classList.add('draw');
         } 
-        else if (currentStep === 2) {
-            document.getElementById('fail-scene').classList.remove('hidden');
-            document.getElementById('fail-scene').classList.add('visible');
+        else if (step === 2) {
+            document.getElementById('fail-g').classList.add('visible');
         } 
-        else if (currentStep === 3) {
-            document.getElementById('leg1-group').classList.add('fall-right');
-            document.getElementById('leg2-group').classList.add('fall-left');
-            document.getElementById('fail-arc1').classList.remove('hidden');
-            document.getElementById('fail-arc1').classList.add('draw', 'visible');
-            document.getElementById('fail-arc2').classList.remove('hidden');
-            document.getElementById('fail-arc2').classList.add('draw', 'visible');
+        else if (step === 3) {
+            document.getElementById('f-l').classList.add('fall-right');
+            document.getElementById('f-r').classList.add('fall-left');
+            document.getElementById('arc-f1').classList.add('draw');
+            document.getElementById('arc-f2').classList.add('draw');
         }
-        else if (currentStep === 4) {
-            document.getElementById('fail-scene').classList.add('fade-out');
+        else if (step === 4) {
+            document.getElementById('fail-g').classList.add('fade-out');
             setTimeout(() => {
-                document.getElementById('fail-scene').style.display = 'none';
-                document.getElementById('success-scene').classList.remove('hidden');
-                document.getElementById('success-scene').classList.add('visible');
-            }, 500);
+                document.getElementById('succ-g').classList.add('visible');
+            }, 600);
         }
-        else if (currentStep === 5) {
-            document.getElementById('succ-leg1-group').classList.add('rotate-up-left');
-            document.getElementById('succ-leg2-group').classList.add('rotate-up-right');
-            
-            document.getElementById('succ-arc1').classList.remove('hidden');
-            document.getElementById('succ-arc1').classList.add('draw', 'visible');
-            document.getElementById('succ-arc2').classList.remove('hidden');
-            document.getElementById('succ-arc2').classList.add('draw', 'visible');
-            
-            setTimeout(() => {
-                document.getElementById('label-succ1').classList.add('visible');
-                document.getElementById('label-succ2').classList.add('visible');
-            }, 1400);
+        else if (step === 5) {
+            document.getElementById('s-l').classList.add('rotate-up-left');
+            document.getElementById('s-r').classList.add('rotate-up-right');
+            document.getElementById('arc-s1').classList.add('draw');
+            document.getElementById('arc-s2').classList.add('draw');
         }
-        else if (currentStep === 6) {
-            document.getElementById('succ-arc1').classList.add('fade-out');
-            document.getElementById('succ-arc2').classList.add('fade-out');
-            document.getElementById('label-base-num').classList.add('hidden');
-            document.getElementById('label-succ1').classList.add('hidden');
-            document.getElementById('label-succ2').classList.add('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('label-base-let').classList.remove('hidden');
-                document.getElementById('label-base-let').classList.add('visible');
-                document.getElementById('label-let1').classList.remove('hidden');
-                document.getElementById('label-let1').classList.add('visible');
-                document.getElementById('label-let2').classList.remove('hidden');
-                document.getElementById('label-let2').classList.add('visible');
-            }, 400);
+        else if (step === 6) {
+            // Зеленый треугольник пропадает
+            document.getElementById('succ-g').classList.add('fade-out');
+            document.getElementById('label-4').classList.add('hidden');
         }
-        else if (currentStep === 7) {
-            // Гасим весь SVG (треугольник растворяется)
-            document.getElementById('main-svg').classList.add('fade-out');
-            
-            // Включаем отдельный кадр с формулой
-            const finalFrame = document.getElementById('final-frame');
-            katex.render("c < a + b", document.getElementById('final-formula'), { throwOnError: false, displayMode: true });
-            
-            setTimeout(() => {
-                finalFrame.classList.remove('hidden');
-                finalFrame.classList.add('visible');
-            }, 500); // Показываем формулу после растворения графики
+        else if (step === 7) {
+            // Появляется красный абстрактный треугольник ABC
+            document.getElementById('final-title').classList.add('visible');
+            document.getElementById('final-g').classList.add('visible');
+            document.getElementById('label-c').classList.remove('hidden');
+            document.getElementById('label-c').classList.add('visible');
         }
     }
-
-    document.body.addEventListener('click', nextStep);
-    document.addEventListener('keydown', (e) => { if (e.code === 'Space') nextStep(); });
+    document.body.addEventListener('click', next);
+    document.addEventListener('keydown', e => { if(e.code==='Space') next(); });
 </script>
-
 </body>
 </html>
