@@ -17,7 +17,7 @@
             width: 100vw; height: 100vh; max-width: 600px; max-height: 900px;
             position: relative;
         }
-        svg { width: 100%; height: 100%; }
+        svg { width: 100%; height: 100%; transition: opacity 0.8s ease; }
 
         /* Линии и их неоновое свечение */
         svg path, svg line { stroke-width: 5; fill: none; stroke-linecap: round; }
@@ -26,49 +26,52 @@
         .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
         .success-line { stroke: #00ff00; filter: drop-shadow(0 0 10px #00ff00); }
 
-        /* Следы от циркуля (дуги окружностей) */
+        /* Следы от циркуля */
         .arc-trace { stroke-width: 3; opacity: 0.4; stroke-dasharray: 600; stroke-dashoffset: 600; }
         .arc1 { stroke: #ffd700; }
         .arc2 { stroke: #ff4500; }
         .arc-success { stroke: #00ff00; }
 
-        /* Базовая анимация проявки линий */
         .draw { animation: drawing 1.2s ease-out forwards; }
         @keyframes drawing { to { stroke-dashoffset: 0; } }
 
-        /* ВРАЩЕНИЕ: Сцена 1 (Падение вниз) */
+        /* ВРАЩЕНИЕ: Сцена 1 (Неудача) */
         .fall-right { animation: fallR 1.5s ease-in-out forwards; }
         @keyframes fallR { to { transform: translate(150px, 600px) rotate(90deg); } }
         
         .fall-left { animation: fallL 1.5s ease-in-out forwards; }
         @keyframes fallL { to { transform: translate(450px, 600px) rotate(-90deg); } }
 
-        /* ВРАЩЕНИЕ: Сцена 2 (Подъем вверх и встреча в точке) */
+        /* ВРАЩЕНИЕ: Сцена 2 (Успех со сторонами 3 и 2) */
         .rotate-up-left { animation: rotateUpL 1.5s ease-in-out forwards; }
-        @keyframes rotateUpL { to { transform: translate(150px, 600px) rotate(41.8deg); } }
+        @keyframes rotateUpL { to { transform: translate(150px, 600px) rotate(61.1deg); } } /* Угол для стороны 3 */
 
         .rotate-up-right { animation: rotateUpR 1.5s ease-in-out forwards; }
-        @keyframes rotateUpR { to { transform: translate(450px, 600px) rotate(-41.8deg); } }
+        @keyframes rotateUpR { to { transform: translate(450px, 600px) rotate(-43.5deg); } } /* Угол для стороны 2 */
 
-        /* Текстовые метки */
+        /* Тексты */
         .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; transition: opacity 0.5s; }
         .label-large { fill: #fff; font-size: 32px; font-style: italic; font-family: serif; }
 
-        /* Управление видимостью */
         .hidden { visibility: hidden; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
         .visible { visibility: visible; opacity: 1; }
-        .fade-out { opacity: 0; transition: opacity 0.5s; }
+        .fade-out { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
 
-        #formula-box {
-            position: absolute; bottom: 10%; left: 0; width: 100%;
-            text-align: center; font-size: 32px;
+        /* Финальный отдельный кадр */
+        #final-frame {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #1a1a1d; z-index: 10;
+        }
+        #final-formula {
+            font-size: 45px; filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
         }
     </style>
 </head>
 <body>
 
 <div id="scene">
-    <svg viewBox="0 0 600 900">
+    <svg viewBox="0 0 600 900" id="main-svg">
         <g id="base-group">
             <line x1="150" y1="600" x2="450" y2="600" class="base-line hidden" id="baseLine" stroke-dasharray="300" stroke-dashoffset="300" />
             <text x="290" y="640" class="label hidden" id="label-base-num" style="fill: #00ffff;">4</text>
@@ -93,21 +96,23 @@
                 <line x1="0" y1="0" x2="0" y2="-225" class="success-line" />
             </g>
             <g id="succ-leg2-group" transform="translate(450, 600)">
-                <line x1="0" y1="0" x2="0" y2="-225" class="success-line" />
+                <line x1="0" y1="0" x2="0" y2="-150" class="success-line" />
             </g>
 
-            <path d="M 150 375 A 225 225 0 0 1 345 487" class="arc-trace arc-success hidden" id="succ-arc1" />
-            <path d="M 450 375 A 225 225 0 0 0 255 487" class="arc-trace arc-success hidden" id="succ-arc2" />
+            <path d="M 150 375 A 225 225 0 0 1 347 491" class="arc-trace arc-success hidden" id="succ-arc1" />
+            <path d="M 450 450 A 150 150 0 0 0 347 491" class="arc-trace arc-success hidden" id="succ-arc2" />
             
-            <text x="180" y="500" class="label hidden" id="label-succ1" style="fill: #00ff00;">3</text>
-            <text x="400" y="500" class="label hidden" id="label-succ2" style="fill: #00ff00;">3</text>
+            <text x="210" y="520" class="label hidden" id="label-succ1" style="fill: #00ff00;">3</text>
+            <text x="390" y="540" class="label hidden" id="label-succ2" style="fill: #00ff00;">2</text>
             
-            <text x="180" y="500" class="label-large hidden" id="label-let1" style="fill: #00ff00;">a</text>
-            <text x="400" y="500" class="label-large hidden" id="label-let2" style="fill: #00ff00;">b</text>
+            <text x="210" y="520" class="label-large hidden" id="label-let1" style="fill: #00ff00;">a</text>
+            <text x="390" y="540" class="label-large hidden" id="label-let2" style="fill: #00ff00;">b</text>
         </g>
     </svg>
 
-    <div id="formula-box" class="hidden"></div>
+    <div id="final-frame" class="hidden">
+        <div id="final-formula"></div>
+    </div>
 </div>
 
 <script>
@@ -133,7 +138,6 @@
             document.getElementById('fail-arc2').classList.remove('hidden');
             document.getElementById('fail-arc2').classList.add('draw', 'visible');
         }
-        // ШАГ 4: Убираем старое, плавно вытягиваем вверх две новые палочки по 3
         else if (currentStep === 4) {
             document.getElementById('fail-scene').classList.add('fade-out');
             setTimeout(() => {
@@ -142,7 +146,6 @@
                 document.getElementById('success-scene').classList.add('visible');
             }, 500);
         }
-        // ШАГ 5: Эпичное вращение навстречу друг другу + прорисовка пересекающихся окружностей
         else if (currentStep === 5) {
             document.getElementById('succ-leg1-group').classList.add('rotate-up-left');
             document.getElementById('succ-leg2-group').classList.add('rotate-up-right');
@@ -152,13 +155,11 @@
             document.getElementById('succ-arc2').classList.remove('hidden');
             document.getElementById('succ-arc2').classList.add('draw', 'visible');
             
-            // Как только палочки соединились — зажигаем цифры 3 и 3
             setTimeout(() => {
                 document.getElementById('label-succ1').classList.add('visible');
                 document.getElementById('label-succ2').classList.add('visible');
             }, 1400);
         }
-        // ШАГ 6: Магия трансформации: цифры [3, 3, 4] плавно заменяются на геометрию [a, b, c]
         else if (currentStep === 6) {
             document.getElementById('succ-arc1').classList.add('fade-out');
             document.getElementById('succ-arc2').classList.add('fade-out');
@@ -175,12 +176,18 @@
                 document.getElementById('label-let2').classList.add('visible');
             }, 400);
         }
-        // ШАГ 7: Появление финального неравенства KaTeX
         else if (currentStep === 7) {
-            const formulaBox = document.getElementById('formula-box');
-            katex.render("c < a + b", formulaBox, { throwOnError: false });
-            formulaBox.classList.remove('hidden');
-            formulaBox.classList.add('visible');
+            // Гасим весь SVG (треугольник растворяется)
+            document.getElementById('main-svg').classList.add('fade-out');
+            
+            // Включаем отдельный кадр с формулой
+            const finalFrame = document.getElementById('final-frame');
+            katex.render("c < a + b", document.getElementById('final-formula'), { throwOnError: false, displayMode: true });
+            
+            setTimeout(() => {
+                finalFrame.classList.remove('hidden');
+                finalFrame.classList.add('visible');
+            }, 500); // Показываем формулу после растворения графики
         }
     }
 
