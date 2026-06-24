@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Math Animation - Throw Method (Full)</title>
+    <title>Math Animation - Throw Method (Full Director's Cut)</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     
@@ -105,21 +105,17 @@
         #vieta-block {
             position: absolute;
             top: 35%;
-            right: -600px; /* Убрали далеко-далеко за экран */
+            right: -600px; 
             opacity: 0;
             font-size: 28px;
             font-family: 'Times New Roman', serif;
             color: var(--neon-yellow);
             text-shadow: 0 0 10px rgba(255, 234, 0, 0.3);
-            /* Замедлили анимацию до 1.5 секунд */
             transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
             z-index: 5;
         }
 
-        #vieta-block.visible {
-            right: 20px; 
-            opacity: 1;
-        }
+        #vieta-block.visible { right: 20px; opacity: 1; }
 
         .system-plate {
             background: rgba(30, 30, 35, 0.7); 
@@ -147,15 +143,37 @@
         }
         #factoring-block.visible { opacity: 1; transform: translateY(0); }
 
-        /* 5. Итоговые корни и дроби */
+        /* Промежуточные корни в одну строку (Клик 4) */
+        #roots-block {
+            position: absolute;
+            top: 72%;
+            width: 100%;
+            text-align: center;
+            font-size: 50px;
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #roots-block.visible { opacity: 1; transform: scale(1); }
+
+        /* Класс для очистки экрана (Клик 5) */
+        .fade-out {
+            opacity: 0 !important;
+            transform: scale(0.9) translateY(10px) !important;
+            pointer-events: none;
+        }
+
+        /* 5. Блок с дробями (Клик 6) */
         #roots-container {
             position: absolute;
-            top: 67%;
+            top: 50%; /* Встает ровно по центру освободившегося экрана */
             width: 100%;
             display: flex;
             justify-content: center;
-            gap: 40px;
-            font-size: 45px;
+            gap: 60px;
+            font-size: 50px;
             font-family: 'Times New Roman', serif;
             opacity: 0;
             transform: scale(0.8);
@@ -176,7 +194,7 @@
             height: 4px;
             background-color: var(--neon-mint);
             box-shadow: 0 0 10px var(--neon-mint);
-            margin: 5px 0;
+            margin: 8px 0;
             transform: scaleX(0);
             transition: transform 0.5s ease;
         }
@@ -190,10 +208,10 @@
         }
         .denominator.drop { opacity: 1; transform: translateY(0); }
 
-        /* 6. Финальные ответы */
+        /* 6. Финальные ответы (Клик 7) */
         #final-answers {
             position: absolute;
-            top: 86%;
+            top: 75%;
             width: 100%;
             text-align: center;
             font-size: 55px;
@@ -234,6 +252,10 @@
     <div id="factoring-block">
         <span class="neon-yellow">15</span> · (<span class="neon-yellow">-1</span>) = -15<br>
         <span class="neon-yellow">15</span> + (<span class="neon-yellow">-1</span>) = 14
+    </div>
+
+    <div id="roots-block" class="neon-mint">
+        <i>x₁</i> = 15,  <i>x₂</i> = -1
     </div>
 
     <div id="roots-container" class="neon-mint">
@@ -278,37 +300,51 @@
                 currentStep++;
             }
             else if (currentStep === 2) {
-                // Клик 3: Уравнение вверх, выезжает табличка (медленно)
+                // Клик 3: Уравнение вверх, выезжает табличка Виета
                 eqContainer.classList.add('slide-up-more');
                 document.getElementById('vieta-block').classList.add('visible');
                 
-                // Подбор множителей появляется чуть позже таблички
+                // Подбор множителей появляется чуть позже
                 setTimeout(() => {
                     document.getElementById('factoring-block').classList.add('visible');
                 }, 1200);
-                
                 currentStep++;
             }
             else if (currentStep === 3) {
                 // Клик 4: Всплывают промежуточные корни 15 и -1
-                document.getElementById('roots-container').classList.add('visible');
+                document.getElementById('roots-block').classList.add('visible');
                 currentStep++;
             }
             else if (currentStep === 4) {
-                // Клик 5: Возврат долга (чертим дроби, роняем тройки)
+                // Клик 5: Растворяем Виета, подбор и строку с корнями
+                document.getElementById('vieta-block').classList.add('fade-out');
+                document.getElementById('factoring-block').classList.add('fade-out');
+                document.getElementById('roots-block').classList.add('fade-out');
+                currentStep++;
+            }
+            else if (currentStep === 5) {
+                // Клик 6: Появляются корни по центру, готовые к делению
+                document.getElementById('roots-container').classList.add('visible');
+                currentStep++;
+            }
+            else if (currentStep === 6) {
+                // Клик 7: Чертим дроби, выпадают тройки, появляются ответы
                 const lines = document.querySelectorAll('.fraction-line');
                 const denoms = document.querySelectorAll('.denominator');
                 
+                // 1. Рисуем линии дроби
                 lines.forEach(line => line.classList.add('draw'));
+                
+                // 2. Сбрасываем тройки вниз
                 setTimeout(() => {
                     denoms.forEach(denom => denom.classList.add('drop'));
                 }, 300);
                 
-                currentStep++;
-            }
-            else if (currentStep === 5) {
-                // Клик 6: Финальный ответ
-                document.getElementById('final-answers').classList.add('visible');
+                // 3. Выводим желтым цветом финальные ответы
+                setTimeout(() => {
+                    document.getElementById('final-answers').classList.add('visible');
+                }, 900);
+
                 currentStep++;
             }
         }
