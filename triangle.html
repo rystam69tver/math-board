@@ -2,16 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Math Animation - Throw Method</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <title>Math Animation - Throw Method (Step 1)</title>
     
     <style>
         :root {
             --neon-mint: #00ffcc;
-            --neon-yellow: #ffea00;
+            --neon-red: #ff0055;
             --bg-dark: #1a1a1f;
         }
 
@@ -36,140 +32,151 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
         }
 
-        #task-header {
+        /* Центральный блок, который будет уезжать наверх */
+        #center-stage {
             position: absolute;
-            top: 40%;
+            top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(1);
-            transform-origin: top left;
-            transition: top 1.2s cubic-bezier(0.22, 1, 0.36, 1),
-                        left 1.2s cubic-bezier(0.22, 1, 0.36, 1),
-                        transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
-                        opacity 1.2s ease;
-            font-size: 45px;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            white-space: nowrap;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            width: 100%;
+            transition: top 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Класс для сдвига наверх (Клик 1) */
+        #center-stage.slide-up {
+            top: 15%;
+            transform: translate(-50%, 0) scale(0.85); /* Чуть уменьшаем, чтобы освободить больше места */
+        }
+
+        /* Текст задания */
+        #task-text {
+            font-size: 32px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            line-height: 1.3;
+        }
+
+        .highlight-text {
+            color: var(--neon-mint);
+            text-shadow: 0 0 15px var(--neon-mint);
+        }
+
+        /* Уравнение */
+        #equation {
+            font-size: 55px;
+            display: flex;
+            align-items: center;
+            white-space: pre;
+            font-family: 'Times New Roman', serif; /* Имитация шрифта формул */
+            font-style: italic; /* Делаем иксы наклонными, как в математике */
+        }
+
+        /* Убираем наклон у цифр и знаков */
+        #equation span, #equation div {
+            font-style: normal;
+        }
+        .math-x {
+            font-style: italic !important;
+        }
+
+        .neon-mint {
+            color: var(--neon-mint);
+            text-shadow: 0 0 15px var(--neon-mint), 0 0 30px var(--neon-mint);
+        }
+        
+        .neon-red {
+            color: var(--neon-red);
+            text-shadow: 0 0 15px var(--neon-red), 0 0 30px var(--neon-red);
+        }
+
+        /* Элементы для анимации переброски */
+        #coeff-a {
+            display: inline-block;
+            position: relative;
             z-index: 10;
         }
 
-        #task-header.minimized {
-            top: 60px;
-            left: 20px;
-            transform: translate(0, 0) scale(0.55);
-            opacity: 0.8;
+        #mid-part, #coeff-c, #eq-end {
+            display: inline-block;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .steps-container {
-            margin-top: 120px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px; /* Немного увеличил отступ между шагами для дробей */
-            width: 100%;
-            padding: 0 20px;
-            box-sizing: border-box;
+        #coeff-c {
+            transition: color 0.2s, text-shadow 0.2s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .step {
-            opacity: 0;
-            font-size: 38px;
-        }
-
-        .step.active {
-            animation: neon-pop 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        @keyframes neon-pop {
-            0% {
-                opacity: 0;
-                transform: translateY(40px) scale(0.95);
-                text-shadow: 0 0 0px transparent;
-                filter: brightness(1);
+        /* Анимация полета (дистанция задается через JS) */
+        @keyframes flyArc {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { 
+                transform: translate(calc(var(--dist) / 2), -150px) scale(1.6) rotate(15deg); 
+                color: var(--neon-red); 
+                text-shadow: 0 0 20px var(--neon-red);
             }
-            30% {
-                opacity: 1;
-                transform: translateY(0px) scale(1.03); 
-                text-shadow: 0 0 20px #fff, 0 0 40px var(--neon-mint), 0 0 60px var(--neon-mint); 
-                filter: brightness(1.3);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                text-shadow: 0 0 15px rgba(255, 255, 255, 0.1); 
-                filter: brightness(1);
-            }
+            100% { transform: translate(var(--dist), 0) scale(1) rotate(0deg); }
         }
 
-        .euler-mark {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            font-size: 14px;
-            opacity: 0.3;
-            color: var(--neon-mint);
-        }
     </style>
 </head>
 <body>
 
 <div class="viewport-9-16">
-    <div id="task-header">
-        $$ \textcolor{#00ffcc}{3}x^2 - 14x - 5 = 0 $$
+    
+    <div id="center-stage">
+        <div id="task-text">
+            Вычислить с помощью<br>
+            <span class="highlight-text">теоремы Виета</span>
+        </div>
+        
+        <div id="equation">
+            <div id="coeff-a" class="neon-mint">3</div>
+            <div id="mid-part"><span class="math-x">x</span>² - 14<span class="math-x">x</span> - </div>
+            <div id="coeff-c">5</div>
+            <div id="eq-end"> = 0</div>
+        </div>
     </div>
 
-    <div class="steps-container">
-        <div class="step" id="step1">$$ \xrightarrow{\cdot \textcolor{#00ffcc}{3}} x^2 - 14x - 15 = 0 $$</div>
-        
-        <div class="step" id="step2">$$ y_1 = 15, \quad y_2 = -1 $$</div>
-        
-        <div class="step" id="step3">$$ x_1 = \frac{15}{\textcolor{#00ffcc}{3}}, \quad x_2 = \frac{-1}{\textcolor{#00ffcc}{3}} $$</div>
-        
-        <div class="step" id="step4">$$ \mathbf{x_1 = \textcolor{#ffea00}{5}, \quad x_2 = \textcolor{#ffea00}{-\frac{1}{3}}} $$</div>
-    </div>
-
-    <div class="euler-mark">$$ e^{i\pi} + 1 = 0 $$</div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false}
-            ],
-            throwOnError: false 
-        });
-    });
-
     let currentStep = 0;
-    const taskHeader = document.getElementById('task-header');
-    const totalSteps = 4;
+    const centerStage = document.getElementById('center-stage');
+    
+    // Элементы уравнения
+    const coeffA = document.getElementById('coeff-a');
+    const midPart = document.getElementById('mid-part');
+    const coeffC = document.getElementById('coeff-c');
+    const eqEnd = document.getElementById('eq-end');
 
     window.addEventListener('click', () => {
         if (currentStep === 0) {
-            taskHeader.classList.add('minimized');
-            setTimeout(() => {
-                showNextStep();
-            }, 600);
-        } else {
-            showNextStep();
+            // Клик 1: Поднимаем всё наверх
+            centerStage.classList.add('slide-up');
+            currentStep++;
+        } 
+        else if (currentStep === 1) {
+            // Клик 2: Запускаем полет
+            startThrowAnimation();
+            currentStep++;
         }
     });
 
-    function showNextStep() {
-        if (currentStep < totalSteps) {
-            currentStep++;
-            const step = document.getElementById('step' + currentStep);
-            if (step) step.classList.add('active');
-        }
-    }
-    
+    // Дублируем управление на пробел/стрелку
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' || e.code === 'ArrowRight') window.dispatchEvent(new Event('click'));
     });
-</script>
-</body>
-</html>
+
+    function startThrowAnimation() {
+        // 1. Вычисляем точное расстояние от 3 до 5 на экране
+        const rectA = coeffA.getBoundingClientRect();
+        const rectC = coeffC.getBoundingClientRect();
+        const distX = rectC.left - rectA.left;
+        
+        // Расстояние, на которое нужно с
