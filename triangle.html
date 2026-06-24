@@ -32,37 +32,27 @@
             max-width: 405px;
             height: 100%;
             margin: 0 auto;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* Центральный блок, который будет уезжать наверх */
-        #center-stage {
+        /* Текст задания (независимый слой) */
+        #task-text {
             position: absolute;
-            top: 50%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
             width: 100%;
-            transition: top 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        /* Класс для сдвига наверх (Клик 1) */
-        #center-stage.slide-up {
-            top: 15%;
-            transform: translate(-50%, 0) scale(0.85); /* Чуть уменьшаем, чтобы освободить место снизу */
-        }
-
-        /* Текст задания */
-        #task-text {
             font-size: 32px;
             text-align: center;
             font-weight: bold;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
             line-height: 1.3;
+            transition: top 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Анимация отлета текста наверх (Клик 1) */
+        #task-text.slide-up {
+            top: 15%;
+            transform: translate(-50%, -50%) scale(0.85); /* Чуть уменьшаем заголовок, чтобы не давил */
         }
 
         .highlight-text {
@@ -70,18 +60,28 @@
             text-shadow: 0 0 15px var(--neon-mint);
         }
 
-        /* Уравнение */
-        #equation {
-            font-size: 55px;
+        /* Уравнение (независимый слой) */
+        #equation-container {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
             display: flex;
             align-items: center;
+            font-size: 55px;
             white-space: pre;
             font-family: 'Times New Roman', serif;
             font-style: italic; 
+            transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Анимация уменьшения уравнения на месте (Клик 1) */
+        #equation-container.shrink {
+            transform: translate(-50%, -50%) scale(0.85);
         }
 
         /* Убираем наклон у цифр и знаков */
-        #equation span, #equation div {
+        #equation-container span, #equation-container div {
             font-style: normal;
         }
         .math-x {
@@ -129,38 +129,36 @@
 <body>
 
 <div class="viewport-9-16">
-    <div id="center-stage">
-        <div id="task-text">
-            Вычислить с помощью<br>
-            <span class="highlight-text">теоремы Виета</span>
-        </div>
-        
-        <div id="equation">
-            <div id="coeff-a" class="neon-mint">3</div>
-            <div id="mid-part"><span class="math-x">x</span>² - 14<span class="math-x">x</span> - </div>
-            <div id="coeff-c">5</div>
-            <div id="eq-end"> = 0</div>
-        </div>
+    <div id="task-text">
+        Вычислить с помощью<br>
+        <span class="highlight-text">теоремы Виета</span>
+    </div>
+    
+    <div id="equation-container">
+        <div id="coeff-a" class="neon-mint">3</div>
+        <div id="mid-part"><span class="math-x">x</span>² - 14<span class="math-x">x</span> - </div>
+        <div id="coeff-c">5</div>
+        <div id="eq-end"> = 0</div>
     </div>
 </div>
 
 <script>
-    // Ждем полной загрузки HTML перед тем как вешать клики
     document.addEventListener("DOMContentLoaded", () => {
         
         let currentStep = 0;
-        const centerStage = document.getElementById('center-stage');
+        const taskText = document.getElementById('task-text');
+        const eqContainer = document.getElementById('equation-container');
         
         const coeffA = document.getElementById('coeff-a');
         const midPart = document.getElementById('mid-part');
         const coeffC = document.getElementById('coeff-c');
         const eqEnd = document.getElementById('eq-end');
 
-        // Единая функция для переключения шагов
         function nextAction() {
             if (currentStep === 0) {
-                // Клик 1: Поднимаем всё наверх
-                centerStage.classList.add('slide-up');
+                // Клик 1: Текст улетает наверх, уравнение сжимается на месте
+                taskText.classList.add('slide-up');
+                eqContainer.classList.add('shrink');
                 currentStep++;
             } 
             else if (currentStep === 1) {
@@ -170,36 +168,31 @@
             }
         }
 
-        // Вешаем слушатель на весь документ
         document.addEventListener('click', nextAction);
 
-        // Дублируем на пробел и стрелку вправо
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.code === 'ArrowRight') {
-                e.preventDefault(); // Убираем скролл страницы от пробела
+                e.preventDefault(); 
                 nextAction();
             }
         });
 
         function startThrowAnimation() {
-            // Считаем дистанцию
+            // Размеры берутся динамически уже после того, как масштаб изменился
             const rectA = coeffA.getBoundingClientRect();
             const rectC = coeffC.getBoundingClientRect();
-            const distX = rectC.left - rectA.left;
-            const shiftX = rectA.width; 
+            const distX = (rectC.left - rectA.left) * (1 / 0.85); // Компенсируем scale(0.85) родителя
+            const shiftX = rectA.width * (1 / 0.85); 
 
-            // Запускаем полет
             coeffA.style.setProperty('--dist', `${distX}px`);
             coeffA.style.animation = 'flyArc 1s ease-in-out forwards';
 
-            // Момент удара
             setTimeout(() => {
-                coeffA.style.opacity = '0'; // Прячем 3
+                coeffA.style.opacity = '0'; 
                 
-                coeffC.innerText = '15'; // Пишем 15
-                coeffC.classList.add('neon-red'); // Красная вспышка
+                coeffC.innerText = '15'; 
+                coeffC.classList.add('neon-red'); 
                 
-                // Сдвигаем влево
                 midPart.style.transform = `translateX(-${shiftX}px)`;
                 coeffC.style.transform = `translateX(-${shiftX}px)`;
                 eqEnd.style.transform = `translateX(-${shiftX}px)`;
