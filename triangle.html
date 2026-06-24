@@ -1,225 +1,175 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Метод Переброски - Анимация</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
+    <meta charset="UTF-8">
+    <title>Math Animation - Throw Method</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            --neon-mint: #00ffcc;
+            --neon-yellow: #ffea00;
+            --bg-dark: #1a1a1f;
+        }
 
-  body {
-    background-color: #0a0a0a;
-    color: #ffffff;
-    font-family: 'Montserrat', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    overflow: hidden;
-    font-size: 5rem; /* Огромный шрифт под Shorts */
-  }
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(#262631 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+        }
 
-  .scene {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+        .viewport-9-16 {
+            position: relative;
+            width: 100%;
+            max-width: 405px;
+            height: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
 
-  .equation {
-    display: flex;
-    align-items: center;
-    position: relative;
-    white-space: pre;
-  }
+        #task-header {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            transform-origin: top left;
+            transition: top 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        left 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 1.2s ease;
+            font-size: 45px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+            z-index: 10;
+        }
 
-  /* Цветовые акценты (Неон) */
-  .neon-blue {
-    color: #00ffff;
-    text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff;
-  }
-  .neon-red {
-    color: #ff0055;
-    text-shadow: 0 0 15px #ff0055, 0 0 30px #ff0055;
-  }
-  .neon-green {
-    color: #00ff00;
-    text-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00;
-  }
+        #task-header.minimized {
+            top: 60px;
+            left: 20px;
+            transform: translate(0, 0) scale(0.55);
+            opacity: 0.8;
+        }
 
-  /* Элементы уравнения */
-  #coeff-a {
-    display: inline-block;
-    z-index: 10;
-  }
-  
-  #middle-part, #coeff-c, #eq-end {
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+        .steps-container {
+            margin-top: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Немного увеличил отступ между шагами для дробей */
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
 
-  #coeff-c {
-    display: inline-block;
-    transition: color 0.1s, text-shadow 0.1s, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+        .step {
+            opacity: 0;
+            font-size: 38px;
+        }
 
-  /* Блок с корнями */
-  .roots-container {
-    margin-top: 60px;
-    display: flex;
-    gap: 100px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
+        .step.active {
+            animation: neon-pop 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
 
-  .root-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+        @keyframes neon-pop {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+                text-shadow: 0 0 0px transparent;
+                filter: brightness(1);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(0px) scale(1.03); 
+                text-shadow: 0 0 20px #fff, 0 0 40px var(--neon-mint), 0 0 60px var(--neon-mint); 
+                filter: brightness(1.3);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.1); 
+                filter: brightness(1);
+            }
+        }
 
-  .root-y {
-    transition: transform 0.5s ease;
-  }
-
-  .fraction-line {
-    width: 100%;
-    height: 6px;
-    background-color: #00ffff;
-    box-shadow: 0 0 15px #00ffff;
-    margin: 10px 0;
-    opacity: 0;
-    transform: scaleX(0);
-    transition: transform 0.4s ease, opacity 0.4s ease;
-  }
-
-  .denominator {
-    opacity: 0;
-    transform: translateY(-30px);
-    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .final-x {
-    margin-top: 30px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-
-  /* Динамическая анимация параболы создается через JS */
-  .hidden {
-    opacity: 0 !important;
-  }
-</style>
+        .euler-mark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 14px;
+            opacity: 0.3;
+            color: var(--neon-mint);
+        }
+    </style>
 </head>
 <body>
 
-<div class="scene">
-  <div class="equation" id="main-eq">
-    <div id="coeff-a" class="neon-blue">3</div>
-    <div id="middle-part">x² - 14x - </div>
-    <div id="coeff-c">5</div>
-    <div id="eq-end"> = 0</div>
-  </div>
+<div class="viewport-9-16">
+    <div id="task-header">
+        $$ \textcolor{#00ffcc}{3}x^2 - 14x - 5 = 0 $$
+    </div>
 
-  <div class="roots-container" id="roots">
-    <div class="root-block">
-      <div class="root-y" id="y1">y₁ = 15</div>
-      <div class="fraction-line" id="line1"></div>
-      <div class="denominator neon-blue" id="den1">3</div>
-      <div class="final-x neon-green" id="x1">x₁ = 5</div>
+    <div class="steps-container">
+        <div class="step" id="step1">$$ \xrightarrow{\cdot \textcolor{#00ffcc}{3}} x^2 - 14x - 15 = 0 $$</div>
+        
+        <div class="step" id="step2">$$ y_1 = 15, \quad y_2 = -1 $$</div>
+        
+        <div class="step" id="step3">$$ x_1 = \frac{15}{\textcolor{#00ffcc}{3}}, \quad x_2 = \frac{-1}{\textcolor{#00ffcc}{3}} $$</div>
+        
+        <div class="step" id="step4">$$ \mathbf{x_1 = \textcolor{#ffea00}{5}, \quad x_2 = \textcolor{#ffea00}{-\frac{1}{3}}} $$</div>
     </div>
-    
-    <div class="root-block">
-      <div class="root-y" id="y2">y₂ = -1</div>
-      <div class="fraction-line" id="line2"></div>
-      <div class="denominator neon-blue" id="den2">3</div>
-      <div class="final-x neon-green" id="x2">x₂ = -1/3</div>
-    </div>
-  </div>
+
+    <div class="euler-mark">$$ e^{i\pi} + 1 = 0 $$</div>
 </div>
 
 <script>
-  // Главный таймлайн анимации
-  window.onload = () => {
+    document.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false 
+        });
+    });
+
+    let currentStep = 0;
+    const taskHeader = document.getElementById('task-header');
+    const totalSteps = 4;
+
+    window.addEventListener('click', () => {
+        if (currentStep === 0) {
+            taskHeader.classList.add('minimized');
+            setTimeout(() => {
+                showNextStep();
+            }, 600);
+        } else {
+            showNextStep();
+        }
+    });
+
+    function showNextStep() {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            const step = document.getElementById('step' + currentStep);
+            if (step) step.classList.add('active');
+        }
+    }
     
-    const coeffA = document.getElementById('coeff-a');
-    const coeffC = document.getElementById('coeff-c');
-    const middlePart = document.getElementById('middle-part');
-    const eqEnd = document.getElementById('eq-end');
-    
-    // Вычисляем дистанцию для броска (от '3' до '5')
-    const rectA = coeffA.getBoundingClientRect();
-    const rectC = coeffC.getBoundingClientRect();
-    const distanceX = rectC.left - rectA.left;
-    
-    // Генерируем CSS-анимацию параболы на лету
-    const styleSheet = document.styleSheets[0];
-    const keyframes = `
-      @keyframes throwArc {
-        0% { transform: translate(0, 0) scale(1); }
-        50% { transform: translate(${distanceX / 2}px, -150px) scale(1.6); color: #ff0055; text-shadow: 0 0 20px #ff0055; }
-        100% { transform: translate(${distanceX}px, 0) scale(1); }
-      }
-    `;
-    styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
-
-    // ==========================================
-    // ТАЙМИНГИ (В миллисекундах)
-    // Настраивай под свою аудиодорожку
-    // ==========================================
-
-    // 1. Старт полета тройки
-    setTimeout(() => {
-      coeffA.style.animation = 'throwArc 1s ease-in-out forwards';
-    }, 1000); 
-
-    // 2. Момент удара и схлопывание уравнения
-    setTimeout(() => {
-      coeffA.classList.add('hidden'); // Прячем летящую тройку
-      
-      coeffC.innerText = '15'; // Меняем число
-      coeffC.classList.add('neon-red'); // Вспышка красным
-      
-      // Сдвигаем всё влево, чтобы закрыть дырку от тройки
-      const shiftLeft = rectA.width;
-      middlePart.style.transform = `translateX(-${shiftLeft}px)`;
-      coeffC.style.transform = `translateX(-${shiftLeft}px)`;
-      eqEnd.style.transform = `translateX(-${shiftLeft}px)`;
-    }, 1950); // Удар происходит прямо перед концом анимации полета
-
-    // 3. Появление промежуточных корней (Теорема Виета)
-    setTimeout(() => {
-      document.getElementById('roots').style.opacity = '1';
-    }, 3500);
-
-    // 4. Возврат долга: появление дробей и знаменателей
-    setTimeout(() => {
-      document.getElementById('line1').style.opacity = '1';
-      document.getElementById('line1').style.transform = 'scaleX(1)';
-      document.getElementById('line2').style.opacity = '1';
-      document.getElementById('line2').style.transform = 'scaleX(1)';
-      
-      document.getElementById('den1').style.opacity = '1';
-      document.getElementById('den1').style.transform = 'translateY(0)';
-      
-      document.getElementById('den2').style.opacity = '1';
-      document.getElementById('den2').style.transform = 'translateY(0)';
-      
-      // Незаметно меняем 'y' на 'x' в верхнем ряду
-      document.getElementById('y1').innerHTML = 'x₁ = 15';
-      document.getElementById('y2').innerHTML = 'x₂ = -1';
-    }, 5500);
-
-    // 5. Появление финальных ответов
-    setTimeout(() => {
-      document.getElementById('x1').style.opacity = '1';
-      document.getElementById('x1').style.transform = 'translateY(0)';
-      
-      document.getElementById('x2').style.opacity = '1';
-      document.getElementById('x2').style.transform = 'translateY(0)';
-    }, 7000);
-  };
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'ArrowRight') window.dispatchEvent(new Event('click'));
+    });
 </script>
 </body>
 </html>
