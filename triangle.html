@@ -269,4 +269,21 @@
             const distX = (rectC.left - rectA.left) * (1 / 0.85); 
             const shiftX = rectA.width * (1 / 0.85); 
 
-            coeffA.style.setProperty('--dist', `${distX
+            coeffA.style.setProperty('--dist', `${distX}px`);
+            coeffA.style.animation = 'flyArc 1s ease-in-out forwards';
+
+            setTimeout(() => {
+                coeffA.style.opacity = '0'; 
+                
+                coeffC.innerText = '15'; 
+                coeffC.classList.add('neon-red'); 
+                
+                midPart.style.transform = `translateX(-${shiftX}px)`;
+                coeffC.style.transform = `translateX(-${shiftX}px)`;
+                eqEnd.style.transform = `translateX(-${shiftX}px)`;
+            }, 950);
+        }
+    });
+</script>
+</body>
+</html>
