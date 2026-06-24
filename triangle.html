@@ -1,168 +1,225 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Геометрия ОГЭ - Неравенство треугольника</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <style>
-        body {
-            margin: 0; padding: 0; background-color: #1a1a1d;
-            color: #fff; font-family: 'Segoe UI', Arial, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; cursor: pointer;
-        }
-        #scene {
-            width: 100vw; height: 100vh; max-width: 600px; max-height: 900px;
-            position: relative;
-        }
-        svg { width: 100%; height: 100%; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Метод Переброски - Анимация</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
 
-        /* Текст задания */
-        #task-ui {
-            position: absolute; top: 45%; left: 5%; right: 5%;
-            text-align: center; font-size: 28px; line-height: 1.4;
-            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 20;
-        }
-        #task-ui.active { top: 5%; opacity: 0.4; font-size: 20px; }
+  body {
+    background-color: #0a0a0a;
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    font-size: 5rem; /* Огромный шрифт под Shorts */
+  }
 
-        /* Линии и неоновое свечение */
-        svg path, svg line { stroke-width: 6; fill: none; stroke-linecap: round; }
-        .base-line { stroke: #00ffff; filter: drop-shadow(0 0 8px #00ffff); }
-        .leg1-line { stroke: #ffd700; filter: drop-shadow(0 0 8px #ffd700); }
-        .leg2-line { stroke: #ff4500; filter: drop-shadow(0 0 8px #ff4500); }
-        .success-line { stroke: #00ff00; filter: drop-shadow(0 0 10px #00ff00); }
-        .final-line { stroke: #ff5f5f; filter: drop-shadow(0 0 10px #ff5f5f); }
+  .scene {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-        /* Дуги циркуля */
-        .arc-trace { stroke-width: 3; opacity: 0.3; stroke-dasharray: 800; stroke-dashoffset: 800; }
-        .arc-fail { stroke: #ff4500; }
-        .arc-success { stroke: #00ff00; }
+  .equation {
+    display: flex;
+    align-items: center;
+    position: relative;
+    white-space: pre;
+  }
 
-        /* Анимации вращения */
-        .fall-right { animation: fallR 1.5s ease-in-out forwards; }
-        @keyframes fallR { to { transform: translate(150px, 600px) rotate(90deg); } }
-        .fall-left { animation: fallL 1.5s ease-in-out forwards; }
-        @keyframes fallL { to { transform: translate(450px, 600px) rotate(-90deg); } }
+  /* Цветовые акценты (Неон) */
+  .neon-blue {
+    color: #00ffff;
+    text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff;
+  }
+  .neon-red {
+    color: #ff0055;
+    text-shadow: 0 0 15px #ff0055, 0 0 30px #ff0055;
+  }
+  .neon-green {
+    color: #00ff00;
+    text-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00;
+  }
 
-        .rotate-up-left { animation: rotUpL 1.5s ease-in-out forwards; }
-        @keyframes rotUpL { to { transform: translate(150px, 600px) rotate(61.1deg); } }
-        .rotate-up-right { animation: rotUpR 1.5s ease-in-out forwards; }
-        @keyframes rotUpR { to { transform: translate(450px, 600px) rotate(-43.5deg); } }
+  /* Элементы уравнения */
+  #coeff-a {
+    display: inline-block;
+    z-index: 10;
+  }
+  
+  #middle-part, #coeff-c, #eq-end {
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-        /* Тексты внутри SVG и финальный блок */
-        .label { fill: #fff; font-size: 24px; font-weight: bold; font-family: monospace; }
-        .label-abc { font-size: 34px; font-style: italic; font-family: serif; }
-        
-        #final-title { 
-            font-size: 32px; font-weight: bold; text-align: center; width: 100%; 
-            position: absolute; top: 18%; color: #ff5f5f; 
-        }
-        #final-formula {
-            position: absolute; top: 25%; width: 100%; text-align: center; 
-            font-size: 36px; filter: drop-shadow(0 0 8px rgba(255,255,255,0.6));
-        }
+  #coeff-c {
+    display: inline-block;
+    transition: color 0.1s, text-shadow 0.1s, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-        /* Утилиты */
-        .hidden { visibility: hidden; opacity: 0; transition: opacity 0.6s; }
-        .visible { visibility: visible; opacity: 1; }
-        .draw { animation: drawing 1.2s ease-out forwards; }
-        @keyframes drawing { to { stroke-dashoffset: 0; } }
-        .fade-out { opacity: 0; transition: opacity 0.6s; pointer-events: none; }
-    </style>
+  /* Блок с корнями */
+  .roots-container {
+    margin-top: 60px;
+    display: flex;
+    gap: 100px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .root-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .root-y {
+    transition: transform 0.5s ease;
+  }
+
+  .fraction-line {
+    width: 100%;
+    height: 6px;
+    background-color: #00ffff;
+    box-shadow: 0 0 15px #00ffff;
+    margin: 10px 0;
+    opacity: 0;
+    transform: scaleX(0);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  .denominator {
+    opacity: 0;
+    transform: translateY(-30px);
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .final-x {
+    margin-top: 30px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  /* Динамическая анимация параболы создается через JS */
+  .hidden {
+    opacity: 0 !important;
+  }
+</style>
 </head>
 <body>
 
-<div id="scene">
-    <div id="task-ui">
-        Существует ли треугольник<br>со сторонами <b>1, 2 и 4</b>?
+<div class="scene">
+  <div class="equation" id="main-eq">
+    <div id="coeff-a" class="neon-blue">3</div>
+    <div id="middle-part">x² - 14x - </div>
+    <div id="coeff-c">5</div>
+    <div id="eq-end"> = 0</div>
+  </div>
+
+  <div class="roots-container" id="roots">
+    <div class="root-block">
+      <div class="root-y" id="y1">y₁ = 15</div>
+      <div class="fraction-line" id="line1"></div>
+      <div class="denominator neon-blue" id="den1">3</div>
+      <div class="final-x neon-green" id="x1">x₁ = 5</div>
     </div>
-
-    <div id="final-title" class="hidden">Неравенство треугольника</div>
-    <div id="final-formula" class="hidden"></div>
-
-    <svg viewBox="0 0 600 900" id="main-svg">
-        <g id="base-g" class="hidden">
-            <line x1="150" y1="600" x2="450" y2="600" class="base-line" stroke-dasharray="300" stroke-dashoffset="300" id="baseL"/>
-            <text x="290" y="645" class="label" id="label-4" style="fill:#00ffff">4</text>
-            <text x="290" y="645" class="label label-abc hidden" id="label-c">c</text>
-        </g>
-
-        <g id="fail-g" class="hidden">
-            <g id="f-l" transform="translate(150, 600)"><line x1="0" y1="0" x2="0" y2="-75" class="leg1-line"/><text x="-25" y="-35" class="label">1</text></g>
-            <g id="f-r" transform="translate(450, 600)"><line x1="0" y1="0" x2="0" y2="-150" class="leg2-line"/><text x="15" y="-70" class="label">2</text></g>
-            <path d="M 150 525 A 75 75 0 0 1 225 600" class="arc-trace arc-fail" id="arc-f1"/>
-            <path d="M 450 450 A 150 150 0 0 0 300 600" class="arc-trace arc-fail" id="arc-f2"/>
-        </g>
-
-        <g id="succ-g" class="hidden">
-            <g id="s-l" transform="translate(150, 600)"><line x1="0" y1="0" x2="0" y2="-225" class="success-line"/><text x="-25" y="-80" class="label" id="label-3">3</text></g>
-            <g id="s-r" transform="translate(450, 600)"><line x1="0" y1="0" x2="0" y2="-150" class="success-line"/><text x="15" y="-60" class="label" id="label-2">2</text></g>
-            <path d="M 150 375 A 225 225 0 0 1 347 491" class="arc-trace arc-success" id="arc-s1"/>
-            <path d="M 450 450 A 150 150 0 0 0 347 491" class="arc-trace arc-success" id="arc-s2"/>
-        </g>
-
-        <g id="final-g" class="hidden">
-            <path d="M 150 600 L 320 380 L 450 600 Z" class="final-line"/>
-            <text x="210" y="470" class="label label-abc" style="fill:#ff5f5f">a</text>
-            <text x="380" y="470" class="label label-abc" style="fill:#ff5f5f">b</text>
-        </g>
-    </svg>
+    
+    <div class="root-block">
+      <div class="root-y" id="y2">y₂ = -1</div>
+      <div class="fraction-line" id="line2"></div>
+      <div class="denominator neon-blue" id="den2">3</div>
+      <div class="final-x neon-green" id="x2">x₂ = -1/3</div>
+    </div>
+  </div>
 </div>
 
 <script>
-    let step = 0;
-    function next() {
-        step++;
-        if (step === 1) {
-            document.getElementById('task-ui').classList.add('active');
-            document.getElementById('base-g').classList.add('visible');
-            document.getElementById('baseL').classList.add('draw');
-        } 
-        else if (step === 2) {
-            document.getElementById('fail-g').classList.add('visible');
-        } 
-        else if (step === 3) {
-            document.getElementById('f-l').classList.add('fall-right');
-            document.getElementById('f-r').classList.add('fall-left');
-            document.getElementById('arc-f1').classList.add('draw');
-            document.getElementById('arc-f2').classList.add('draw');
-        }
-        else if (step === 4) {
-            document.getElementById('fail-g').classList.add('fade-out');
-            setTimeout(() => {
-                document.getElementById('succ-g').classList.add('visible');
-            }, 600);
-        }
-        else if (step === 5) {
-            document.getElementById('s-l').classList.add('rotate-up-left');
-            document.getElementById('s-r').classList.add('rotate-up-right');
-            document.getElementById('arc-s1').classList.add('draw');
-            document.getElementById('arc-s2').classList.add('draw');
-        }
-        else if (step === 6) {
-            // Зеленый треугольник пропадает
-            document.getElementById('succ-g').classList.add('fade-out');
-            document.getElementById('label-4').classList.add('hidden');
-        }
-        else if (step === 7) {
-            // Появляется красный треугольник, заголовок и рендерится формула
-            document.getElementById('final-title').classList.add('visible');
-            
-            const formulaBox = document.getElementById('final-formula');
-            katex.render("c < a + b", formulaBox, { throwOnError: false });
-            formulaBox.classList.remove('hidden');
-            formulaBox.classList.add('visible');
+  // Главный таймлайн анимации
+  window.onload = () => {
+    
+    const coeffA = document.getElementById('coeff-a');
+    const coeffC = document.getElementById('coeff-c');
+    const middlePart = document.getElementById('middle-part');
+    const eqEnd = document.getElementById('eq-end');
+    
+    // Вычисляем дистанцию для броска (от '3' до '5')
+    const rectA = coeffA.getBoundingClientRect();
+    const rectC = coeffC.getBoundingClientRect();
+    const distanceX = rectC.left - rectA.left;
+    
+    // Генерируем CSS-анимацию параболы на лету
+    const styleSheet = document.styleSheets[0];
+    const keyframes = `
+      @keyframes throwArc {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(${distanceX / 2}px, -150px) scale(1.6); color: #ff0055; text-shadow: 0 0 20px #ff0055; }
+        100% { transform: translate(${distanceX}px, 0) scale(1); }
+      }
+    `;
+    styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
 
-            document.getElementById('final-g').classList.add('visible');
-            document.getElementById('label-c').classList.remove('hidden');
-            document.getElementById('label-c').classList.add('visible');
-        }
-    }
-    document.body.addEventListener('click', next);
-    document.addEventListener('keydown', e => { if(e.code==='Space') next(); });
+    // ==========================================
+    // ТАЙМИНГИ (В миллисекундах)
+    // Настраивай под свою аудиодорожку
+    // ==========================================
+
+    // 1. Старт полета тройки
+    setTimeout(() => {
+      coeffA.style.animation = 'throwArc 1s ease-in-out forwards';
+    }, 1000); 
+
+    // 2. Момент удара и схлопывание уравнения
+    setTimeout(() => {
+      coeffA.classList.add('hidden'); // Прячем летящую тройку
+      
+      coeffC.innerText = '15'; // Меняем число
+      coeffC.classList.add('neon-red'); // Вспышка красным
+      
+      // Сдвигаем всё влево, чтобы закрыть дырку от тройки
+      const shiftLeft = rectA.width;
+      middlePart.style.transform = `translateX(-${shiftLeft}px)`;
+      coeffC.style.transform = `translateX(-${shiftLeft}px)`;
+      eqEnd.style.transform = `translateX(-${shiftLeft}px)`;
+    }, 1950); // Удар происходит прямо перед концом анимации полета
+
+    // 3. Появление промежуточных корней (Теорема Виета)
+    setTimeout(() => {
+      document.getElementById('roots').style.opacity = '1';
+    }, 3500);
+
+    // 4. Возврат долга: появление дробей и знаменателей
+    setTimeout(() => {
+      document.getElementById('line1').style.opacity = '1';
+      document.getElementById('line1').style.transform = 'scaleX(1)';
+      document.getElementById('line2').style.opacity = '1';
+      document.getElementById('line2').style.transform = 'scaleX(1)';
+      
+      document.getElementById('den1').style.opacity = '1';
+      document.getElementById('den1').style.transform = 'translateY(0)';
+      
+      document.getElementById('den2').style.opacity = '1';
+      document.getElementById('den2').style.transform = 'translateY(0)';
+      
+      // Незаметно меняем 'y' на 'x' в верхнем ряду
+      document.getElementById('y1').innerHTML = 'x₁ = 15';
+      document.getElementById('y2').innerHTML = 'x₂ = -1';
+    }, 5500);
+
+    // 5. Появление финальных ответов
+    setTimeout(() => {
+      document.getElementById('x1').style.opacity = '1';
+      document.getElementById('x1').style.transform = 'translateY(0)';
+      
+      document.getElementById('x2').style.opacity = '1';
+      document.getElementById('x2').style.transform = 'translateY(0)';
+    }, 7000);
+  };
 </script>
 </body>
 </html>
