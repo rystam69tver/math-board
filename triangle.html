@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <title>Math Animation - Throw Method (Steps 1-3)</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --neon-mint: #00ffcc;
             --neon-red: #ff0055;
-            --neon-yellow: #ffea00; /* Добавили желтый для правил */
+            --neon-yellow: #ffea00; 
             --bg-dark: #1a1a1f;
         }
 
@@ -35,29 +37,33 @@
             margin: 0 auto;
         }
 
-        /* 1. Текст задания */
+        /* 1. Текст задания (Стильный шрифт) */
         #task-text {
             position: absolute;
             top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 100%;
-            font-size: 32px;
+            font-family: 'Montserrat', sans-serif; /* Применили новый шрифт */
+            font-size: 30px;
+            font-weight: 800; /* Максимальная жирность */
+            text-transform: uppercase; /* Делаем заголовок более строгим */
+            letter-spacing: 1px;
             text-align: center;
-            font-weight: bold;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-            line-height: 1.3;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            line-height: 1.4;
             transition: top 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         #task-text.slide-up {
             top: 12%;
-            transform: translate(-50%, -50%) scale(0.85); 
+            transform: translate(-50%, -50%) scale(0.8); 
         }
 
         .highlight-text {
             color: var(--neon-mint);
             text-shadow: 0 0 15px var(--neon-mint);
+            font-size: 34px; /* Чуть увеличили саму суть */
         }
 
         /* 2. Уравнение */
@@ -79,9 +85,8 @@
             transform: translate(-50%, -50%) scale(0.85);
         }
 
-        /* Новый класс для подъема уравнения к заголовку (Клик 3) */
         #equation-container.slide-up-more {
-            top: 25%; /* Оставляет идеальный зазор в пару сантиметров от заголовка */
+            top: 25%; 
             transform: translate(-50%, -50%) scale(0.85);
         }
 
@@ -107,26 +112,31 @@
         #vieta-block {
             position: absolute;
             top: 36%;
-            right: -200px; /* Спрятано за экраном */
+            right: -250px; 
             opacity: 0;
             font-size: 28px;
             font-family: 'Times New Roman', serif;
             color: var(--neon-yellow);
-            text-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
+            text-shadow: 0 0 10px rgba(255, 234, 0, 0.3);
             transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 5;
         }
 
         #vieta-block.visible {
-            right: 30px; /* Выезжает в правую часть экрана */
+            right: 20px; 
             opacity: 1;
         }
 
-        /* Имитация фигурной скобки системы уравнений */
-        .system-brace {
-            border-left: 3px solid var(--neon-yellow);
-            padding-left: 15px;
-            box-shadow: -5px 0 15px -5px var(--neon-yellow);
-            line-height: 1.4;
+        /* Новая стеклянная пластинка для Виета */
+        .system-plate {
+            background: rgba(30, 30, 35, 0.7); /* Темная полупрозрачная подложка */
+            border: 1px solid rgba(255, 234, 0, 0.15); /* Едва заметная рамка */
+            border-left: 4px solid var(--neon-yellow); /* Левая грань светится сильнее */
+            border-radius: 12px;
+            padding: 15px 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 234, 0, 0.05); /* Глубокие тени и внутреннее свечение */
+            backdrop-filter: blur(8px); /* Размывает фон под панелью */
+            line-height: 1.5;
         }
 
         /* 4. Блок подбора корней (по центру) */
@@ -185,7 +195,7 @@
     </div>
 
     <div id="vieta-block">
-        <div class="system-brace">
+        <div class="system-plate">
             <i>x₁</i> · <i>x₂</i> = -15<br>
             <i>x₁</i> + <i>x₂</i> = 14
         </div>
@@ -259,21 +269,4 @@
             const distX = (rectC.left - rectA.left) * (1 / 0.85); 
             const shiftX = rectA.width * (1 / 0.85); 
 
-            coeffA.style.setProperty('--dist', `${distX}px`);
-            coeffA.style.animation = 'flyArc 1s ease-in-out forwards';
-
-            setTimeout(() => {
-                coeffA.style.opacity = '0'; 
-                
-                coeffC.innerText = '15'; 
-                coeffC.classList.add('neon-red'); 
-                
-                midPart.style.transform = `translateX(-${shiftX}px)`;
-                coeffC.style.transform = `translateX(-${shiftX}px)`;
-                eqEnd.style.transform = `translateX(-${shiftX}px)`;
-            }, 950);
-        }
-    });
-</script>
-</body>
-</html>
+            coeffA.style.setProperty('--dist', `${distX
